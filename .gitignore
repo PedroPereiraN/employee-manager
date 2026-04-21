@@ -1,0 +1,37 @@
+# ================================
+# FRONTEND (Vue.js / Node)
+# ================================
+frontend/node_modules/
+frontend/.pnpm-store/
+frontend/dist/
+frontend/.nuxt/
+frontend/.output/
+frontend/.env
+frontend/.env.*
+frontend/!.env.example
+
+# ================================
+# BACKEND (Python / Poetry)
+# ================================
+backend/.venv/
+backend/__pycache__/
+backend/**/__pycache__/
+backend/**/*.pyc
+backend/**/*.pyo
+backend/.env
+backend/.env.*
+backend/!.env.example
+
+# ================================
+# BANCO DE DADOS
+# ================================
+postgres_data/
+
+# ================================
+# SISTEMA
+# ================================
+.DS_Store
+Thumbs.db
+*.log
+
+.claude/

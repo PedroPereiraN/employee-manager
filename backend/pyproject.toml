@@ -1,0 +1,21 @@
+[tool.poetry]
+name = "employee-manager"
+version = "0.1.0"
+description = "Employee Manager API"
+authors = []
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.12"
+fastapi = "^0.115.0"
+uvicorn = {extras = ["standard"], version = "^0.32.0"}
+bcrypt = "^5.0.0"
+sqlalchemy = "^2.0.49"
+alembic = "^1.18.4"
+uuid7 = "^0.1.0"
+uuid6 = "^2025.0.1"
+psycopg2-binary = "^2.9.12"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
