@@ -1,5 +1,6 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from app.config.seeder import runSeeder
 from app.routers.users import user_router
 from app.routers.auth import auth_router
 
@@ -21,3 +22,5 @@ def health():
 
 app.include_router(auth_router)
 app.include_router(user_router)
+
+runSeeder()
