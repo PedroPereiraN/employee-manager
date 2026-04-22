@@ -80,6 +80,21 @@ class UserRepository:
 
         return UserMapper.model_to_output(model=user_model)
 
+    def find_by_email(self, email: str) -> User:
+        user_model = (
+            self.db.query(UserModel)
+            .filter(UserModel.email == email, UserModel.deleted_at.is_(None))
+            .first()
+        )
+
+        if not user_model:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="User not found",
+            )
+
+        return UserMapper.model_to_entity(model=user_model)
+
     def update(self, entity: User) -> None:
         user_model = UserMapper.to_model(entity=entity)
         try:

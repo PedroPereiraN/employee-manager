@@ -1,6 +1,7 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from app.routers.users import user_router
+from app.routers.auth import auth_router
 
 app = FastAPI(title="Employee Manager API")
 
@@ -18,4 +19,5 @@ def health():
     return {"status": "ok"}
 
 
+app.include_router(auth_router)
 app.include_router(user_router)
