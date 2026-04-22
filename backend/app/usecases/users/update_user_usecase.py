@@ -17,7 +17,7 @@ class UpdateUserUsecase(UseCase[UpdateUserInputDto, UpdateUserOutputDto]):
                 id=input.id,
                 name=input.name if input.name else find_user.name,
                 email=input.email if input.email else find_user.email,
-                password="",
+                password=find_user.password,
                 role=input.role if input.role else find_user.role,
                 created_at=find_user.created_at,
                 updated_at=date.today(),

@@ -1,4 +1,5 @@
 from fastapi import HTTPException, status
+from app.mappers.user_mapper import UserMapper
 from app.protocols.usecase import UseCase
 from app.dtos.user import ListUserInputDto, OutputUserDto
 from app.repositories.user_repository import UserRepository
@@ -12,10 +13,4 @@ class ListUserUsecase(UseCase[ListUserInputDto, OutputUserDto]):
 
         output = self.user_repository.find_by_id(id=input.id)
 
-        if output:
-            return output
-
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="User not found",
-        )
+        return UserMapper.entity_to_output(entity=output)

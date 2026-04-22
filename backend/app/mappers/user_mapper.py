@@ -43,3 +43,15 @@ class UserMapper:
             updated_at=model.updated_at,
             deleted_at=model.deleted_at,
         )
+
+    @staticmethod
+    def entity_to_output(entity: User) -> OutputUserDto:
+        return OutputUserDto(
+            id=entity.id,
+            name=entity.name,
+            email=entity.email,
+            role=entity.role,
+            created_at=entity.created_at,
+            updated_at=entity.updated_at,
+            deleted_at=entity.deleted_at,
+        )

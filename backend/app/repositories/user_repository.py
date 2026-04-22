@@ -65,7 +65,7 @@ class UserRepository:
             total=total, page=page, size=size, pages=pages, items=items_output
         )
 
-    def find_by_id(self, id: UUID) -> OutputUserDto:
+    def find_by_id(self, id: UUID) -> User:
         user_model = (
             self.db.query(UserModel)
             .filter(UserModel.id == id, UserModel.deleted_at.is_(None))
@@ -78,7 +78,7 @@ class UserRepository:
                 detail="User not found",
             )
 
-        return UserMapper.model_to_output(model=user_model)
+        return UserMapper.model_to_entity(model=user_model)
 
     def find_by_email(self, email: str) -> User:
         user_model = (
