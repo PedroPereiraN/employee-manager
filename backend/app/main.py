@@ -3,6 +3,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from app.config.seeder import runSeeder
 from app.routers.users import user_router
 from app.routers.auth import auth_router
+from app.routers.positions import position_router
 
 app = FastAPI(title="Employee Manager API")
 
@@ -22,5 +23,6 @@ def health():
 
 app.include_router(auth_router)
 app.include_router(user_router)
+app.include_router(position_router)
 
-runSeeder()
+# runSeeder()
