@@ -11,6 +11,7 @@ from app.dtos.user import (
     ListUserInput,
     OutputUserDto,
     UpdateUserInput,
+    UpdateUserPasswordInput,
 )
 from app.enums.user_role import UserRole
 from app.middleware.get_db import get_db
@@ -19,6 +20,7 @@ from app.usecases.users.create_user_usecase import CreateUserUsecase
 from app.usecases.users.delete_user_usecase import DeleteUserUsecase
 from app.usecases.users.list_paginated_users_usecase import ListPaginatedUsersUsecase
 from app.usecases.users.list_user_usecase import ListUserUsecase
+from app.usecases.users.update_user_password_usecase import UpdateUserPasswordUsecase
 from app.usecases.users.update_user_usecase import UpdateUserUsecase
 
 user_router = APIRouter(prefix="/users", tags=["users"])
@@ -74,3 +76,12 @@ async def delete_user(id: UUID, db: Session = Depends(get_db)):
     return DeleteUserUsecase(user_repository=user_repository).execute(
         DeleteUserInput(id=id)
     )
+
+
+@user_router.patch("/update-password", status_code=204, response_model=None)
+async def update_user_password(
+    body: UpdateUserPasswordInput, db: Session = Depends(get_db)
+):
+    user_repository = UserRepository(db=db)
+
+    return UpdateUserPasswordUsecase(user_repository=user_repository).execute(body)

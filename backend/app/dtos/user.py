@@ -56,3 +56,8 @@ class UpdateUserOutput(BaseModel):
 
 class DeleteUserInput(BaseModel):
     id: UUID
+
+
+class UpdateUserPasswordInput(BaseModel):
+    id: UUID
+    new_password: str

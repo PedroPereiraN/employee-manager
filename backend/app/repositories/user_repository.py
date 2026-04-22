@@ -65,17 +65,20 @@ class UserRepository:
             total=total, page=page, size=size, pages=pages, items=items_output
         )
 
-    def find_by_id(self, id: UUID) -> OutputUserDto | None:
+    def find_by_id(self, id: UUID) -> OutputUserDto:
         user_model = (
             self.db.query(UserModel)
             .filter(UserModel.id == id, UserModel.deleted_at.is_(None))
             .first()
         )
 
-        if user_model:
-            return UserMapper.model_to_output(model=user_model)
+        if not user_model:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="User not found",
+            )
 
-        return None
+        return UserMapper.model_to_output(model=user_model)
 
     def update(self, entity: User) -> None:
         user_model = UserMapper.to_model(entity=entity)
@@ -98,6 +101,30 @@ class UserRepository:
                     detail="User not found",
                 )
             user_model.deleted_at = date.today()
+            self.db.commit()
+        except IntegrityError as e:
+            self.db.rollback()
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=f"Integrity error: {e}",
+            )
+
+    def update_password(self, id: UUID, new_password: str) -> None:
+        try:
+            user_model = (
+                self.db.query(UserModel)
+                .filter(UserModel.id == id, UserModel.deleted_at.is_(None))
+                .first()
+            )
+            if not user_model:
+                raise HTTPException(
+                    status_code=status.HTTP_404_NOT_FOUND,
+                    detail="User not found",
+                )
+
+            user_model.password = new_password
+            user_model.updated_at = date.today()
+
             self.db.commit()
         except IntegrityError as e:
             self.db.rollback()

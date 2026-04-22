@@ -1,6 +1,6 @@
 from datetime import date
 from fastapi import HTTPException, status
-from app.entities.user import CreateUserProps, User, UserProps
+from app.entities.user import User, UserProps
 from app.protocols.usecase import UseCase
 from app.dtos.user import UpdateUserInput, UpdateUserOutput
 from app.repositories.user_repository import UserRepository
@@ -12,12 +12,6 @@ class UpdateUserUsecase(UseCase[UpdateUserInput, UpdateUserOutput]):
 
     def execute(self, input: UpdateUserInput) -> UpdateUserOutput:
         find_user = self.user_repository.find_by_id(id=input.id)
-
-        if not find_user:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail="User not found",
-            )
 
         user = User.restore(
             props=UserProps(
