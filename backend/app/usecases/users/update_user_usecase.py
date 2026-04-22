@@ -1,16 +1,15 @@
 from datetime import date
-from fastapi import HTTPException, status
 from app.entities.user import User, UserProps
 from app.protocols.usecase import UseCase
-from app.dtos.user import UpdateUserInput, UpdateUserOutput
+from app.dtos.user import UpdateUserInputDto, UpdateUserOutputDto
 from app.repositories.user_repository import UserRepository
 
 
-class UpdateUserUsecase(UseCase[UpdateUserInput, UpdateUserOutput]):
+class UpdateUserUsecase(UseCase[UpdateUserInputDto, UpdateUserOutputDto]):
     def __init__(self, user_repository: UserRepository) -> None:
         self.user_repository = user_repository
 
-    def execute(self, input: UpdateUserInput) -> UpdateUserOutput:
+    def execute(self, input: UpdateUserInputDto) -> UpdateUserOutputDto:
         find_user = self.user_repository.find_by_id(id=input.id)
 
         user = User.restore(
@@ -28,6 +27,6 @@ class UpdateUserUsecase(UseCase[UpdateUserInput, UpdateUserOutput]):
 
         self.user_repository.update(entity=user)
 
-        return UpdateUserOutput(
+        return UpdateUserOutputDto(
             id=user.id, name=user.name, email=user.email, role=user.role
         )

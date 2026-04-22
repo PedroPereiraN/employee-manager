@@ -5,21 +5,21 @@ from pydantic import BaseModel
 from app.enums.user_role import UserRole
 
 
-class CreateUserInput(BaseModel):
+class CreateUserInputDto(BaseModel):
     name: str
     password: str
     email: str
     role: UserRole
 
 
-class CreateUserOutput(BaseModel):
+class CreateUserOutputDto(BaseModel):
     id: UUID
     name: str
     email: str
     role: str
 
 
-class ListPaginatedUsersInput(BaseModel):
+class ListPaginatedUsersInputDto(BaseModel):
     page: int
     size: int
     filter: Optional[str] = None
@@ -36,28 +36,28 @@ class OutputUserDto(BaseModel):
     deleted_at: Optional[date] = None
 
 
-class ListUserInput(BaseModel):
+class ListUserInputDto(BaseModel):
     id: UUID
 
 
-class UpdateUserInput(BaseModel):
+class UpdateUserInputDto(BaseModel):
     id: UUID
     name: Optional[str] = None
     email: Optional[str] = None
     role: Optional[UserRole] = None
 
 
-class UpdateUserOutput(BaseModel):
+class UpdateUserOutputDto(BaseModel):
     id: UUID
     name: str
     email: str
     role: str
 
 
-class DeleteUserInput(BaseModel):
+class DeleteUserInputDto(BaseModel):
     id: UUID
 
 
-class UpdateUserPasswordInput(BaseModel):
+class UpdateUserPasswordInputDto(BaseModel):
     id: UUID
     new_password: str

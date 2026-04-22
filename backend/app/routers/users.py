@@ -2,16 +2,16 @@ from typing import Optional
 from uuid import UUID
 from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
-from app.dtos.paginated_response import PaginatedResponse
+from app.dtos.paginated_response import PaginatedResponseDto
 from app.dtos.user import (
-    CreateUserInput,
-    CreateUserOutput,
-    DeleteUserInput,
-    ListPaginatedUsersInput,
-    ListUserInput,
+    CreateUserInputDto,
+    CreateUserOutputDto,
+    DeleteUserInputDto,
+    ListPaginatedUsersInputDto,
+    ListUserInputDto,
     OutputUserDto,
-    UpdateUserInput,
-    UpdateUserPasswordInput,
+    UpdateUserInputDto,
+    UpdateUserPasswordInputDto,
 )
 from app.enums.user_role import UserRole
 from app.middleware.get_token import get_token
@@ -27,9 +27,9 @@ from app.usecases.users.update_user_usecase import UpdateUserUsecase
 user_router = APIRouter(prefix="/users", tags=["users"])
 
 
-@user_router.post("/", status_code=200, response_model=CreateUserOutput)
+@user_router.post("/", status_code=200, response_model=CreateUserOutputDto)
 async def create_user(
-    body: CreateUserInput,
+    body: CreateUserInputDto,
     db: Session = Depends(get_db),
     _: str = Depends(get_token),
 ):
@@ -38,7 +38,9 @@ async def create_user(
     return CreateUserUsecase(user_repository=user_repository).execute(body)
 
 
-@user_router.get("/", status_code=200, response_model=PaginatedResponse[OutputUserDto])
+@user_router.get(
+    "/", status_code=200, response_model=PaginatedResponseDto[OutputUserDto]
+)
 async def list_paginated_users(
     page: int = 1,
     size: int = 10,
@@ -49,7 +51,7 @@ async def list_paginated_users(
 ):
     user_repository = UserRepository(db=db)
 
-    input = ListPaginatedUsersInput(
+    input = ListPaginatedUsersInputDto(
         page=page, size=size, filter=filter, filter_role=filter_role
     )
 
@@ -64,14 +66,14 @@ async def list_user(
 ):
     user_repository = UserRepository(db=db)
 
-    input = ListUserInput(id=id)
+    input = ListUserInputDto(id=id)
 
     return ListUserUsecase(user_repository=user_repository).execute(input)
 
 
-@user_router.put("/", status_code=200, response_model=CreateUserOutput)
+@user_router.put("/", status_code=200, response_model=CreateUserOutputDto)
 async def update_user(
-    body: UpdateUserInput,
+    body: UpdateUserInputDto,
     db: Session = Depends(get_db),
     _: str = Depends(get_token),
 ):
@@ -89,13 +91,13 @@ async def delete_user(
     user_repository = UserRepository(db=db)
 
     return DeleteUserUsecase(user_repository=user_repository).execute(
-        DeleteUserInput(id=id)
+        DeleteUserInputDto(id=id)
     )
 
 
 @user_router.patch("/update-password", status_code=204, response_model=None)
 async def update_user_password(
-    body: UpdateUserPasswordInput,
+    body: UpdateUserPasswordInputDto,
     db: Session = Depends(get_db),
     _: str = Depends(get_token),
 ):

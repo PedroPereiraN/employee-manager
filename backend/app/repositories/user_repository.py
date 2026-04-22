@@ -6,7 +6,7 @@ from sqlalchemy import func, or_
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 from math import ceil
-from app.dtos.paginated_response import PaginatedResponse
+from app.dtos.paginated_response import PaginatedResponseDto
 from app.dtos.user import OutputUserDto
 from app.entities.user import User
 from app.enums.user_role import UserRole
@@ -37,7 +37,7 @@ class UserRepository:
         size: int = 10,
         filter: Optional[str] = None,
         filter_role: Optional[UserRole] = None,
-    ) -> PaginatedResponse[OutputUserDto]:
+    ) -> PaginatedResponseDto[OutputUserDto]:
         query = self.db.query(UserModel).filter(UserModel.deleted_at.is_(None))
 
         if filter:
@@ -61,7 +61,7 @@ class UserRepository:
 
         pages = ceil(total / size) if total > 0 else 1
 
-        return PaginatedResponse(
+        return PaginatedResponseDto(
             total=total, page=page, size=size, pages=pages, items=items_output
         )
 

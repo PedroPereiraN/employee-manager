@@ -1,18 +1,18 @@
-from app.dtos.paginated_response import PaginatedResponse
+from app.dtos.paginated_response import PaginatedResponseDto
 from app.protocols.usecase import UseCase
-from app.dtos.user import ListPaginatedUsersInput, OutputUserDto
+from app.dtos.user import ListPaginatedUsersInputDto, OutputUserDto
 from app.repositories.user_repository import UserRepository
 
 
 class ListPaginatedUsersUsecase(
-    UseCase[ListPaginatedUsersInput, PaginatedResponse[OutputUserDto]]
+    UseCase[ListPaginatedUsersInputDto, PaginatedResponseDto[OutputUserDto]]
 ):
     def __init__(self, user_repository: UserRepository) -> None:
         self.user_repository = user_repository
 
     def execute(
-        self, input: ListPaginatedUsersInput
-    ) -> PaginatedResponse[OutputUserDto]:
+        self, input: ListPaginatedUsersInputDto
+    ) -> PaginatedResponseDto[OutputUserDto]:
 
         output = self.user_repository.list_paginated(
             page=input.page,
