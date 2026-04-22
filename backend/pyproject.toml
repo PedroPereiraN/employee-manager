@@ -16,6 +16,7 @@ uuid7 = "^0.1.0"
 uuid6 = "^2025.0.1"
 psycopg2-binary = "^2.9.12"
 pyjwt = "^2.12.1"
+python-multipart = "^0.0.26"
 
 [build-system]
 requires = ["poetry-core"]
