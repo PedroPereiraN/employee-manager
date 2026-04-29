@@ -6,11 +6,13 @@ from pydantic import BaseModel
 
 class CreatePositionInputDto(BaseModel):
     name: str
+    description: Optional[str] = None
 
 
 class CreatePositionOutputDto(BaseModel):
     id: UUID
     name: str
+    description: Optional[str] = None
     created_at: date
 
 
@@ -30,12 +32,14 @@ class ListPositionInputDto(BaseModel):
 
 class UpdatePositionInputDto(BaseModel):
     id: UUID
-    name: str
+    name: Optional[str] = None
+    description: Optional[str] = None
 
 
 class UpdatePositionOutputDto(BaseModel):
     id: UUID
     name: str
+    description: Optional[str] = None
     created_at: date
     updated_at: date
 
@@ -43,6 +47,7 @@ class UpdatePositionOutputDto(BaseModel):
 class OutputPositionDto(BaseModel):
     id: UUID
     name: str
+    description: Optional[str] = None
     created_at: date
     updated_at: Optional[date] = None
     deleted_at: Optional[date] = None

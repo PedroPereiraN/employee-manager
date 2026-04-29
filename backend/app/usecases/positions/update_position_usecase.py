@@ -16,6 +16,11 @@ class UpdatePositionUsecase(UseCase[UpdatePositionInputDto, UpdatePositionOutput
             props=PositionProps(
                 id=input.id,
                 name=input.name if input.name else find_position.name,
+                description=(
+                    input.description
+                    if input.description
+                    else find_position.description
+                ),
                 created_at=find_position.created_at,
                 updated_at=date.today(),
                 deleted_at=None,
@@ -27,6 +32,7 @@ class UpdatePositionUsecase(UseCase[UpdatePositionInputDto, UpdatePositionOutput
         return UpdatePositionOutputDto(
             id=position.id,
             name=position.name,
+            description=position.description,
             created_at=position.created_at,
             updated_at=position.updated_at if position.updated_at else date.today(),
         )

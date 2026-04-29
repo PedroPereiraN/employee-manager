@@ -10,6 +10,7 @@ class PositionMapper:
         return PositionModel(
             id=entity.id,
             name=entity.name,
+            description=entity.description,
             created_at=entity.created_at,
             updated_at=entity.updated_at,
             deleted_at=entity.deleted_at,
@@ -21,6 +22,7 @@ class PositionMapper:
             props=PositionProps(
                 id=model.id,
                 name=model.name,
+                description=model.description,
                 created_at=model.created_at,
                 updated_at=model.updated_at,
                 deleted_at=model.deleted_at,
@@ -32,6 +34,7 @@ class PositionMapper:
         return OutputPositionDto(
             id=model.id,
             name=model.name,
+            description=model.description,
             created_at=model.created_at,
             updated_at=model.updated_at,
             deleted_at=model.deleted_at,
@@ -42,6 +45,7 @@ class PositionMapper:
         return OutputPositionDto(
             id=entity.id,
             name=entity.name,
+            description=entity.description,
             created_at=entity.created_at,
             updated_at=entity.updated_at,
             deleted_at=entity.deleted_at,
