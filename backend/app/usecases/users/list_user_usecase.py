@@ -1,4 +1,3 @@
-from fastapi import HTTPException, status
 from app.mappers.user_mapper import UserMapper
 from app.protocols.usecase import UseCase
 from app.dtos.user import ListUserInputDto, OutputUserDto
