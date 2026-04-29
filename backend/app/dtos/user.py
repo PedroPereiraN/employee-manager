@@ -17,6 +17,7 @@ class CreateUserOutputDto(BaseModel):
     name: str
     email: str
     role: str
+    created_at: date
 
 
 class ListPaginatedUsersInputDto(BaseModel):
@@ -52,6 +53,8 @@ class UpdateUserOutputDto(BaseModel):
     name: str
     email: str
     role: str
+    created_at: date
+    updated_at: date
 
 
 class DeleteUserInputDto(BaseModel):

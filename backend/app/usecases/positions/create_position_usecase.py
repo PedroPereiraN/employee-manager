@@ -17,4 +17,6 @@ class CreatePositionUsecase(UseCase[CreatePositionInputDto, CreatePositionOutput
 
         self.position_repository.create(entity=position)
 
-        return CreatePositionOutputDto(id=position.id, name=position.name)
+        return CreatePositionOutputDto(
+            id=position.id, name=position.name, created_at=position.created_at
+        )

@@ -21,5 +21,9 @@ class CreateUserUsecase(UseCase[CreateUserInputDto, CreateUserOutputDto]):
         self.user_repository.create(entity=user)
 
         return CreateUserOutputDto(
-            id=user.id, name=user.name, email=user.email, role=user.role
+            id=user.id,
+            name=user.name,
+            email=user.email,
+            role=user.role,
+            created_at=user.created_at,
         )

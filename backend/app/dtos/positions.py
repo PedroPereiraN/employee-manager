@@ -11,6 +11,7 @@ class CreatePositionInputDto(BaseModel):
 class CreatePositionOutputDto(BaseModel):
     id: UUID
     name: str
+    created_at: date
 
 
 class DeletePositionInputDto(BaseModel):
@@ -35,6 +36,8 @@ class UpdatePositionInputDto(BaseModel):
 class UpdatePositionOutputDto(BaseModel):
     id: UUID
     name: str
+    created_at: date
+    updated_at: date
 
 
 class OutputPositionDto(BaseModel):

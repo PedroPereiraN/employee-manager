@@ -24,4 +24,9 @@ class UpdatePositionUsecase(UseCase[UpdatePositionInputDto, UpdatePositionOutput
 
         self.position_repository.update(entity=position)
 
-        return UpdatePositionOutputDto(id=position.id, name=position.name)
+        return UpdatePositionOutputDto(
+            id=position.id,
+            name=position.name,
+            created_at=position.created_at,
+            updated_at=position.updated_at if position.updated_at else date.today(),
+        )
