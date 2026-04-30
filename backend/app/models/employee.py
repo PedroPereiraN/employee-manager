@@ -3,6 +3,7 @@ from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
     from app.models.position import PositionModel
+    from app.models.service_order import WorkSessionModel
 
 from typing import Optional
 from sqlalchemy.orm import Mapped, mapped_column, relationship
@@ -45,6 +46,9 @@ class EmployeeModel(Base):
     )
     position: Mapped[PositionModel] = relationship(
         "PositionModel", back_populates="employees"
+    )
+    work_sessions: Mapped[list[WorkSessionModel]] = relationship(
+        "WorkSessionModel", back_populates="employee"
     )
     created_at: Mapped[date] = mapped_column(Date, nullable=False)
     updated_at: Mapped[Optional[date]] = mapped_column(Date, nullable=True)
