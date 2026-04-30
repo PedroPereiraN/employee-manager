@@ -1,12 +1,12 @@
-from app.dtos.positions import OutputPositionDto
-from app.entities.position import Position, PositionProps
-from app.models.position import PositionModel
+from app.dtos.service_types import OutputServiceTypeDto
+from app.entities.service_type import ServiceType, ServiceTypeProps
+from app.models.service_type import ServiceTypeModel
 
 
-class PositionMapper:
+class ServiceTypeMapper:
     @staticmethod
-    def to_model(entity: Position) -> PositionModel:
-        return PositionModel(
+    def to_model(entity: ServiceType) -> ServiceTypeModel:
+        return ServiceTypeModel(
             id=entity.id,
             name=entity.name,
             description=entity.description,
@@ -16,9 +16,9 @@ class PositionMapper:
         )
 
     @staticmethod
-    def model_to_entity(model: PositionModel) -> Position:
-        return Position(
-            props=PositionProps(
+    def model_to_entity(model: ServiceTypeModel) -> ServiceType:
+        return ServiceType(
+            props=ServiceTypeProps(
                 id=model.id,
                 name=model.name,
                 description=model.description,
@@ -29,8 +29,8 @@ class PositionMapper:
         )
 
     @staticmethod
-    def model_to_output(model: PositionModel) -> OutputPositionDto:
-        return OutputPositionDto(
+    def model_to_output(model: ServiceTypeModel) -> OutputServiceTypeDto:
+        return OutputServiceTypeDto(
             id=model.id,
             name=model.name,
             description=model.description,
@@ -40,8 +40,8 @@ class PositionMapper:
         )
 
     @staticmethod
-    def entity_to_output(entity: Position) -> OutputPositionDto:
-        return OutputPositionDto(
+    def entity_to_output(entity: ServiceType) -> OutputServiceTypeDto:
+        return OutputServiceTypeDto(
             id=entity.id,
             name=entity.name,
             description=entity.description,

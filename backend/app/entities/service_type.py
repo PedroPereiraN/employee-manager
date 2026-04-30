@@ -5,12 +5,12 @@ import uuid6
 from uuid import UUID
 
 
-class CreatePositionProps(BaseModel):
+class CreateServiceTypeProps(BaseModel):
     name: str
     description: Optional[str] = None
 
 
-class PositionProps(BaseModel):
+class ServiceTypeProps(BaseModel):
     id: UUID
     name: str
     description: Optional[str] = None
@@ -19,7 +19,7 @@ class PositionProps(BaseModel):
     deleted_at: Optional[date] = None
 
 
-class Position:
+class ServiceType:
     id: UUID
     name: str
     description: Optional[str] = None
@@ -27,7 +27,7 @@ class Position:
     updated_at: Optional[date] = None
     deleted_at: Optional[date] = None
 
-    def __init__(self, props: PositionProps):
+    def __init__(self, props: ServiceTypeProps):
         self.id = props.id
         self.name = props.name
         self.description = props.description
@@ -36,9 +36,9 @@ class Position:
         self.deleted_at = props.deleted_at
 
     @staticmethod
-    def create(props: CreatePositionProps):
-        return Position(
-            PositionProps(
+    def create(props: CreateServiceTypeProps):
+        return ServiceType(
+            ServiceTypeProps(
                 id=uuid6.uuid7(),
                 name=props.name,
                 description=props.description,
@@ -47,9 +47,9 @@ class Position:
         )
 
     @staticmethod
-    def restore(props: PositionProps):
-        return Position(
-            PositionProps(
+    def restore(props: ServiceTypeProps):
+        return ServiceType(
+            ServiceTypeProps(
                 id=props.id,
                 name=props.name,
                 description=props.description,

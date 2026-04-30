@@ -7,7 +7,7 @@ if TYPE_CHECKING:
 from typing import Optional
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from sqlalchemy.dialects.postgresql import UUID
-from sqlalchemy import ForeignKey, String, Date, Enum as SAEnum, Float, null
+from sqlalchemy import ForeignKey, String, Date, Enum as SAEnum, Float
 from uuid import UUID as PyUUID
 from datetime import date
 from app.config.base import Base

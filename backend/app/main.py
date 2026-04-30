@@ -5,6 +5,7 @@ from app.routers.users import user_router
 from app.routers.auth import auth_router
 from app.routers.positions import position_router
 from app.routers.employees import employee_router
+from app.routers.service_types import service_type_router
 
 app = FastAPI(title="Employee Manager API")
 
@@ -26,5 +27,6 @@ app.include_router(auth_router)
 app.include_router(user_router)
 app.include_router(position_router)
 app.include_router(employee_router)
+app.include_router(service_type_router)
 
 # runSeeder()
