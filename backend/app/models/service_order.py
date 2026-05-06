@@ -42,6 +42,9 @@ class ServiceOrderModel(Base):
     work_sessions: Mapped[list[WorkSessionModel]] = relationship(
         "WorkSessionModel", back_populates="service_order"
     )
+    status_histories: Mapped[list[ServiceOrderStatusHistoryModel]] = relationship(
+        "ServiceOrderStatusHistoryModel", back_populates="service_order"
+    )
     created_at: Mapped[datetime] = mapped_column(DateTime, nullable=False)
     updated_at: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
     deleted_at: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
@@ -88,8 +91,29 @@ class WorkSessionHistoryModel(Base):
     status: Mapped[WorkSessionStatus] = mapped_column(
         SAEnum(WorkSessionStatus), nullable=False
     )
+    observations: Mapped[Optional[str]] = mapped_column(String, nullable=True)
+
     occurred_at: Mapped[datetime] = mapped_column(DateTime, nullable=False)
     created_at: Mapped[datetime] = mapped_column(DateTime, nullable=False)
     work_session: Mapped[WorkSessionModel] = relationship(
         "WorkSessionModel", back_populates="histories"
+    )
+
+
+class ServiceOrderStatusHistoryModel(Base):
+    __tablename__ = "service_orders_status_histories"
+
+    id: Mapped[PyUUID] = mapped_column(
+        UUID(as_uuid=True), primary_key=True, default=uuid6.uuid7
+    )
+    reason: Mapped[str] = mapped_column(String, nullable=False)
+    status: Mapped[ServiceOrderStatus] = mapped_column(
+        SAEnum(ServiceOrderStatus), nullable=False
+    )
+    created_at: Mapped[datetime] = mapped_column(DateTime, nullable=False)
+    service_order_id: Mapped[PyUUID] = mapped_column(
+        UUID(as_uuid=True), ForeignKey("service_orders.id"), nullable=False
+    )
+    service_order: Mapped[ServiceOrderModel] = relationship(
+        "ServiceOrderModel", back_populates="status_histories"
     )

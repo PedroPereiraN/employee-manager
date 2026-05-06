@@ -95,3 +95,11 @@ class ListPaginatedServiceOrdersInputDto(BaseModel):
     filter: Optional[str] = None
     page: int
     size: int
+
+
+class ListServiceOrderInputDto(BaseModel):
+    id: UUID
+
+
+class DeleteServiceOrderInputDto(BaseModel):
+    id: UUID

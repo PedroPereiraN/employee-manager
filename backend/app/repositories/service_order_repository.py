@@ -1,4 +1,5 @@
 from typing import Optional
+from uuid import UUID
 from fastapi import HTTPException, status
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session, joinedload
@@ -11,6 +12,7 @@ from app.mappers.service_order_mapper import ServiceOrderMapper
 from app.mappers.service_type_mapper import ServiceTypeMapper
 from math import ceil
 from sqlalchemy import func
+from datetime import datetime
 
 from app.models.employee import EmployeeModel
 from app.models.service_order import ServiceOrderModel, WorkSessionModel
@@ -108,3 +110,44 @@ class ServiceOrderRepository:
         return PaginatedResponseDto(
             total=total, page=page, size=size, pages=pages, items=items_output
         )
+
+    def find_by_id(self, id: UUID) -> ServiceOrder:
+        service_order_model = (
+            self.db.query(ServiceOrderModel)
+            .options(
+                joinedload(ServiceOrderModel.work_sessions).joinedload(
+                    WorkSessionModel.histories
+                ),
+            )
+            .filter(ServiceOrderModel.id == id, ServiceOrderModel.deleted_at.is_(None))
+            .first()
+        )
+
+        if not service_order_model:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Service order not found",
+            )
+
+        return ServiceOrderMapper.model_to_entity(model=service_order_model)
+
+    def delete(self, id: UUID) -> None:
+        try:
+            service_order_model = (
+                self.db.query(ServiceOrderModel)
+                .filter(ServiceOrderModel.id == id)
+                .first()
+            )
+            if not service_order_model:
+                raise HTTPException(
+                    status_code=status.HTTP_404_NOT_FOUND,
+                    detail="Service order not found",
+                )
+            service_order_model.deleted_at = datetime.now()
+            self.db.commit()
+        except IntegrityError as e:
+            self.db.rollback()
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=f"Integrity error: {e}",
+            )
