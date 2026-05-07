@@ -3,6 +3,7 @@ from uuid import UUID
 from app.dtos.employees import OutputEmployeeDto
 from app.dtos.service_orders import (
     OutputServiceOrderDto,
+    OutputServiceOrderStatusHistoryDto,
     OutputWorkSessionDto,
     OutputWorkSessionHistoryDto,
 )
@@ -10,11 +11,13 @@ from app.dtos.service_types import OutputServiceTypeDto
 from app.entities.service_order import (
     ServiceOrder,
     ServiceOrderProps,
+    ServiceOrderStatusHistoryProps,
     WorkSessionProps,
     WorkSessionHistoryProps,
 )
 from app.models.service_order import (
     ServiceOrderModel,
+    ServiceOrderStatusHistoryModel,
     WorkSessionModel,
     WorkSessionHistoryModel,
 )
@@ -35,6 +38,16 @@ class ServiceOrderMapper:
             created_at=entity.created_at,
             updated_at=entity.updated_at,
             deleted_at=entity.deleted_at,
+            status_histories=[
+                ServiceOrderStatusHistoryModel(
+                    id=status_history.id,
+                    reason=status_history.reason,
+                    status=status_history.status,
+                    created_at=status_history.created_at,
+                    service_order_id=status_history.service_order_id,
+                )
+                for status_history in entity.status_histories
+            ],
             work_sessions=[
                 WorkSessionModel(
                     id=ws.id,
@@ -73,6 +86,16 @@ class ServiceOrderMapper:
                 created_at=model.created_at,
                 updated_at=model.updated_at,
                 deleted_at=model.deleted_at,
+                status_histories=[
+                    ServiceOrderStatusHistoryProps(
+                        id=status_history.id,
+                        service_order_id=status_history.service_order_id,
+                        reason=status_history.reason,
+                        status=status_history.status,
+                        created_at=status_history.created_at,
+                    )
+                    for status_history in model.status_histories
+                ],
                 work_sessions=[
                     WorkSessionProps(
                         id=ws.id,
@@ -115,6 +138,16 @@ class ServiceOrderMapper:
             created_at=model.created_at,
             updated_at=model.updated_at,
             deleted_at=model.deleted_at,
+            status_histories=[
+                OutputServiceOrderStatusHistoryDto(
+                    id=status_history.id,
+                    service_order_id=status_history.service_order_id,
+                    reason=status_history.reason,
+                    status=status_history.status,
+                    created_at=status_history.created_at,
+                )
+                for status_history in model.status_histories
+            ],
             work_sessions=[
                 OutputWorkSessionDto(
                     id=ws.id,
@@ -156,6 +189,16 @@ class ServiceOrderMapper:
             created_at=entity.created_at,
             updated_at=entity.updated_at,
             deleted_at=entity.deleted_at,
+            status_histories=[
+                OutputServiceOrderStatusHistoryDto(
+                    id=status_history.id,
+                    service_order_id=status_history.service_order_id,
+                    reason=status_history.reason,
+                    status=status_history.status,
+                    created_at=status_history.created_at,
+                )
+                for status_history in entity.status_histories
+            ],
             work_sessions=[
                 OutputWorkSessionDto(
                     id=ws.id,

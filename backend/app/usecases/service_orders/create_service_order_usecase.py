@@ -1,11 +1,13 @@
 from app.dtos.service_orders import (
     CreateServiceOrderInputDto,
     CreateServiceOrderOutputDto,
+    CreateServiceOrderStatusHistoryOutputDto,
     CreateWorkSessionHistoryOutputDto,
     CreateWorkSessionOutputDto,
 )
 from app.entities.service_order import (
     CreateServiceOrderProps,
+    CreateServiceOrderStatusHistoryProps,
     CreateWorkSessionHistoryProps,
     CreateWorkSessionProps,
     ServiceOrder,
@@ -32,6 +34,10 @@ class CreateServiceOrderUsecase(
                 finished_at=input.finished_at,
                 total_hours=input.total_hours,
                 service_type_id=input.service_type_id,
+                status_history=CreateServiceOrderStatusHistoryProps(
+                    status=input.status_history.status,
+                    reason=input.status_history.reason,
+                ),
                 work_sessions=[
                     CreateWorkSessionProps(
                         employee_id=ws.employee_id,
@@ -58,6 +64,16 @@ class CreateServiceOrderUsecase(
             total_hours=service_order.total_hours,
             service_type_id=service_order.service_type_id,
             created_at=service_order.created_at,
+            status_histories=[
+                CreateServiceOrderStatusHistoryOutputDto(
+                    id=sh.id,
+                    service_order_id=sh.service_order_id,
+                    reason=sh.reason,
+                    status=sh.status,
+                    created_at=sh.created_at,
+                )
+                for sh in service_order.status_histories
+            ],
             work_sessions=[
                 CreateWorkSessionOutputDto(
                     id=ws.id,

@@ -9,6 +9,14 @@ from app.dtos.service_types import OutputServiceTypeDto
 from app.enums.work_session_status import WorkSessionStatus
 
 
+class OutputServiceOrderStatusHistoryDto(BaseModel):
+    id: UUID
+    service_order_id: UUID
+    reason: str
+    status: ServiceOrderStatus
+    created_at: datetime
+
+
 class OutputWorkSessionHistoryDto(BaseModel):
     id: UUID
     work_session_id: UUID
@@ -40,6 +48,12 @@ class OutputServiceOrderDto(BaseModel):
     updated_at: Optional[datetime] = None
     deleted_at: Optional[datetime] = None
     work_sessions: List[OutputWorkSessionDto]
+    status_histories: List[OutputServiceOrderStatusHistoryDto]
+
+
+class CreateServiceOrderStatusHistoryInputDto(BaseModel):
+    reason: str
+    status: ServiceOrderStatus
 
 
 class CreateWorkSessionHistoryInputDto(BaseModel):
@@ -60,6 +74,15 @@ class CreateServiceOrderInputDto(BaseModel):
     total_hours: Optional[float] = None
     service_type_id: Optional[UUID] = None
     work_sessions: List[CreateWorkSessionInputDto]
+    status_history: CreateServiceOrderStatusHistoryInputDto
+
+
+class CreateServiceOrderStatusHistoryOutputDto(BaseModel):
+    id: UUID
+    service_order_id: UUID
+    reason: str
+    status: ServiceOrderStatus
+    created_at: datetime
 
 
 class CreateWorkSessionHistoryOutputDto(BaseModel):
@@ -89,6 +112,7 @@ class CreateServiceOrderOutputDto(BaseModel):
     service_type_id: Optional[UUID] = None
     created_at: datetime
     work_sessions: List[CreateWorkSessionOutputDto]
+    status_histories: List[CreateServiceOrderStatusHistoryOutputDto]
 
 
 class ListPaginatedServiceOrdersInputDto(BaseModel):

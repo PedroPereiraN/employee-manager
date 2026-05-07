@@ -7,6 +7,11 @@ from app.enums.service_order_status import ServiceOrderStatus
 from app.enums.work_session_status import WorkSessionStatus
 
 
+class CreateServiceOrderStatusHistoryProps(BaseModel):
+    reason: str
+    status: ServiceOrderStatus
+
+
 class CreateWorkSessionHistoryProps(BaseModel):
     status: WorkSessionStatus
     occurred_at: datetime
@@ -26,6 +31,15 @@ class CreateServiceOrderProps(BaseModel):
     total_hours: Optional[float] = None
     service_type_id: Optional[UUID] = None
     work_sessions: List[CreateWorkSessionProps]
+    status_history: CreateServiceOrderStatusHistoryProps
+
+
+class ServiceOrderStatusHistoryProps(BaseModel):
+    id: UUID
+    service_order_id: UUID
+    reason: str
+    status: ServiceOrderStatus
+    created_at: datetime
 
 
 class WorkSessionHistoryProps(BaseModel):
@@ -59,6 +73,7 @@ class ServiceOrderProps(BaseModel):
     updated_at: Optional[datetime] = None
     deleted_at: Optional[datetime] = None
     work_sessions: List[WorkSessionProps]
+    status_histories: List[ServiceOrderStatusHistoryProps]
 
 
 class ServiceOrder:
@@ -74,6 +89,7 @@ class ServiceOrder:
     updated_at: Optional[datetime] = None
     deleted_at: Optional[datetime] = None
     work_sessions: List[WorkSessionProps]
+    status_histories: List[ServiceOrderStatusHistoryProps]
 
     def __init__(self, props: ServiceOrderProps):
         self.id = props.id
@@ -88,11 +104,22 @@ class ServiceOrder:
         self.updated_at = props.updated_at
         self.deleted_at = props.deleted_at
         self.work_sessions = props.work_sessions
+        self.status_histories = props.status_histories
 
     @staticmethod
     def create(props: CreateServiceOrderProps):
         now = datetime.now()
         order_id = uuid6.uuid7()
+
+        status_histories = [
+            ServiceOrderStatusHistoryProps(
+                id=uuid6.uuid7(),
+                service_order_id=order_id,
+                reason=props.status_history.reason,
+                status=props.status_history.status,
+                created_at=now,
+            )
+        ]
 
         work_sessions = []
         for ws in props.work_sessions:
@@ -128,6 +155,7 @@ class ServiceOrder:
                 service_type_id=props.service_type_id,
                 created_at=now,
                 work_sessions=work_sessions,
+                status_histories=status_histories,
             )
         )
 
@@ -147,5 +175,6 @@ class ServiceOrder:
                 updated_at=props.updated_at,
                 deleted_at=props.deleted_at,
                 work_sessions=props.work_sessions,
+                status_histories=props.status_histories,
             )
         )
