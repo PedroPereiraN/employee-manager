@@ -35,7 +35,7 @@ class CreateServiceOrderUsecase(
                 total_hours=input.total_hours,
                 service_type_id=input.service_type_id,
                 status_history=CreateServiceOrderStatusHistoryProps(
-                    status=input.status_history.status,
+                    status=input.status,
                     reason=input.status_history.reason,
                 ),
                 work_sessions=[

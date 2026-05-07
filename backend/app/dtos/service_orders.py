@@ -53,7 +53,6 @@ class OutputServiceOrderDto(BaseModel):
 
 class CreateServiceOrderStatusHistoryInputDto(BaseModel):
     reason: str
-    status: ServiceOrderStatus
 
 
 class CreateWorkSessionHistoryInputDto(BaseModel):

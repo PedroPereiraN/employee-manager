@@ -11,7 +11,7 @@ class DeleteServiceOrderUsecase(UseCase[DeleteServiceOrderInputDto, None]):
     def execute(self, input: DeleteServiceOrderInputDto) -> None:
         service_order = self.service_order_repository.find_by_id(id=input.id)
 
-        if service_order.status != "not_started":
+        if not service_order.can_delete():
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
                 detail="Deletion is only allowed for orders with 'Not Started' status.",

@@ -178,3 +178,9 @@ class ServiceOrder:
                 status_histories=props.status_histories,
             )
         )
+
+    def can_delete(self) -> bool:
+        if self.status == "not_started":
+            return True
+
+        return False
