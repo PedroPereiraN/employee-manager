@@ -43,6 +43,7 @@ class CreateServiceOrderUsecase(
                         employee_id=ws.employee_id,
                         histories=[
                             CreateWorkSessionHistoryProps(
+                                observations=h.observations,
                                 status=h.status,
                                 occurred_at=h.occurred_at,
                             )

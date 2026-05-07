@@ -1,11 +1,17 @@
-from typing import Optional
+from typing import List, Optional
 from uuid import UUID
 from fastapi import HTTPException, status
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session, joinedload
 from app.dtos.paginated_response import PaginatedResponseDto
 from app.dtos.service_orders import OutputServiceOrderDto
-from app.entities.service_order import ServiceOrder
+from app.entities.service_order import (
+    ServiceOrder,
+    ServiceOrderStatusHistoryProps,
+    WorkSessionHistoryProps,
+    WorkSessionProps,
+)
+from app.enums.service_order_status import ServiceOrderStatus
 from app.mappers.employee_mapper import EmployeeMapper
 from app.mappers.position_mapper import PositionMapper
 from app.mappers.service_order_mapper import ServiceOrderMapper
@@ -15,7 +21,12 @@ from sqlalchemy import func
 from datetime import datetime
 
 from app.models.employee import EmployeeModel
-from app.models.service_order import ServiceOrderModel, WorkSessionModel
+from app.models.service_order import (
+    ServiceOrderModel,
+    ServiceOrderStatusHistoryModel,
+    WorkSessionHistoryModel,
+    WorkSessionModel,
+)
 
 
 class ServiceOrderRepository:
@@ -148,6 +159,145 @@ class ServiceOrderRepository:
         except IntegrityError as e:
             self.db.rollback()
             raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                detail=f"Integrity error: {e}",
+            )
+
+    def add_new_work_session_histories(
+        self, work_session_histories: List[WorkSessionHistoryProps]
+    ):
+        try:
+            work_session_ids = list({h.work_session_id for h in work_session_histories})
+            work_session_models = (
+                self.db.query(WorkSessionModel)
+                .filter(WorkSessionModel.id.in_(work_session_ids))
+                .all()
+            )
+            if len(work_session_models) != len(work_session_ids):
+                raise HTTPException(
+                    status_code=status.HTTP_404_NOT_FOUND,
+                    detail="One or more work sessions not found",
+                )
+
+            now = datetime.now()
+            service_order_ids = {ws.service_order_id for ws in work_session_models}
+            for ws in work_session_models:
+                ws.updated_at = now
+
+            self.db.query(ServiceOrderModel).filter(
+                ServiceOrderModel.id.in_(service_order_ids)
+            ).update({"updated_at": now}, synchronize_session="fetch")
+
+            self.db.add_all(
+                [
+                    WorkSessionHistoryModel(
+                        id=h.id,
+                        work_session_id=h.work_session_id,
+                        status=h.status,
+                        observations=h.observations,
+                        occurred_at=h.occurred_at,
+                        created_at=h.created_at,
+                    )
+                    for h in work_session_histories
+                ]
+            )
+            self.db.commit()
+        except IntegrityError as e:
+            self.db.rollback()
+            raise HTTPException(
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                detail=f"Integrity error: {e}",
+            )
+
+    def add_new_work_sessions(self, work_sessions: List[WorkSessionProps]):
+        try:
+            service_order_model = (
+                self.db.query(ServiceOrderModel)
+                .filter(ServiceOrderModel.id == work_sessions[0].service_order_id)
+                .first()
+            )
+            if not service_order_model:
+                raise HTTPException(
+                    status_code=status.HTTP_404_NOT_FOUND,
+                    detail="Service order not found",
+                )
+
+            now = datetime.now()
+            service_order_model.updated_at = now
+
+            self.db.add_all(
+                [
+                    WorkSessionModel(
+                        id=ws.id,
+                        service_order_id=ws.service_order_id,
+                        employee_id=ws.employee_id,
+                        created_at=now,
+                    )
+                    for ws in work_sessions
+                ]
+            )
+            self.db.flush()
+
+            self.db.add_all(
+                [
+                    WorkSessionHistoryModel(
+                        id=h.id,
+                        work_session_id=h.work_session_id,
+                        status=h.status,
+                        observations=h.observations,
+                        occurred_at=h.occurred_at,
+                        created_at=h.created_at,
+                    )
+                    for ws in work_sessions
+                    for h in ws.histories
+                ]
+            )
+            self.db.commit()
+        except IntegrityError as e:
+            self.db.rollback()
+            raise HTTPException(
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                detail=f"Integrity error: {e}",
+            )
+
+    def change_service_order_status(
+        self,
+        service_order_status: ServiceOrderStatus,
+        status_history: ServiceOrderStatusHistoryProps,
+    ):
+        try:
+            service_order_model = (
+                self.db.query(ServiceOrderModel)
+                .filter(
+                    ServiceOrderModel.id == status_history.service_order_id,
+                    ServiceOrderModel.deleted_at.is_(None),
+                )
+                .first()
+            )
+
+            if not service_order_model:
+                raise HTTPException(
+                    status_code=status.HTTP_404_NOT_FOUND,
+                    detail="Service order not found",
+                )
+
+            service_order_model.updated_at = datetime.now()
+            service_order_model.status = service_order_status
+
+            status_history_model = ServiceOrderStatusHistoryModel(
+                id=status_history.id,
+                reason=status_history.reason,
+                status=status_history.status,
+                created_at=status_history.created_at,
+                service_order_id=status_history.service_order_id,
+            )
+
+            self.db.add(status_history_model)
+            self.db.commit()
+
+        except IntegrityError as e:
+            self.db.rollback()
+            raise HTTPException(
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
                 detail=f"Integrity error: {e}",
             )

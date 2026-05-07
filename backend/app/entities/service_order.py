@@ -15,6 +15,7 @@ class CreateServiceOrderStatusHistoryProps(BaseModel):
 class CreateWorkSessionHistoryProps(BaseModel):
     status: WorkSessionStatus
     occurred_at: datetime
+    observations: Optional[str] = None
 
 
 class CreateWorkSessionProps(BaseModel):
@@ -46,6 +47,7 @@ class WorkSessionHistoryProps(BaseModel):
     id: UUID
     work_session_id: UUID
     status: WorkSessionStatus
+    observations: Optional[str] = None
     occurred_at: datetime
     created_at: datetime
 

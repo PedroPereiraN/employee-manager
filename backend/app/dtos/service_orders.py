@@ -57,6 +57,7 @@ class CreateServiceOrderStatusHistoryInputDto(BaseModel):
 
 class CreateWorkSessionHistoryInputDto(BaseModel):
     status: WorkSessionStatus
+    observations: Optional[str] = None
     occurred_at: datetime
 
 
@@ -126,3 +127,58 @@ class ListServiceOrderInputDto(BaseModel):
 
 class DeleteServiceOrderInputDto(BaseModel):
     id: UUID
+
+
+class ReportServiceOrderStatusHistoryProgressInputDto(BaseModel):
+    reason: str
+
+
+class ReportWorkSessionHistoryProgressInputDto(BaseModel):
+    status: WorkSessionStatus
+    observations: Optional[str] = None
+    occurred_at: datetime
+
+
+class ReportWorkSessionProgressInputDto(BaseModel):
+    id: Optional[UUID] = None
+    employee_id: Optional[UUID] = None
+    histories: List[ReportWorkSessionHistoryProgressInputDto]
+
+
+class ReportServiceOrderProgressInputDto(BaseModel):
+    service_order_id: UUID
+    status: ServiceOrderStatus
+    work_sessions: List[ReportWorkSessionProgressInputDto]
+    status_history: ReportServiceOrderStatusHistoryProgressInputDto
+
+
+class ReportServiceOrderStatusHistoryProgressOutputDto(BaseModel):
+    id: UUID
+    service_order_id: UUID
+    reason: str
+    status: ServiceOrderStatus
+    created_at: datetime
+
+
+class ReportWorkSessionHistoryProgressOutputDto(BaseModel):
+    id: UUID
+    work_session_id: UUID
+    status: WorkSessionStatus
+    occurred_at: datetime
+    created_at: datetime
+
+
+class ReportWorkSessionProgressOutputDto(BaseModel):
+    id: UUID
+    service_order_id: UUID
+    employee_id: UUID
+    created_at: datetime
+    histories: List[ReportWorkSessionHistoryProgressOutputDto]
+
+
+class ReportServiceOrderProgressOutputDto(BaseModel):
+    service_order_id: UUID
+    status: ServiceOrderStatus
+    updated_at: datetime
+    status_history: ReportServiceOrderStatusHistoryProgressOutputDto
+    work_sessions: List[ReportWorkSessionProgressOutputDto]
