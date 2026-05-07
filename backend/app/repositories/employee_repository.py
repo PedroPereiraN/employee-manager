@@ -1,4 +1,4 @@
-from datetime import date
+from datetime import datetime
 from typing import Optional
 from uuid import UUID
 from fastapi import HTTPException, status
@@ -103,7 +103,7 @@ class EmployeeRepository:
                     status_code=status.HTTP_404_NOT_FOUND,
                     detail="Employee not found",
                 )
-            employee_model.deleted_at = date.today()
+            employee_model.deleted_at = datetime.now()
             self.db.commit()
         except IntegrityError as e:
             self.db.rollback()

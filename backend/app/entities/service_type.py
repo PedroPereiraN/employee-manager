@@ -1,4 +1,4 @@
-from datetime import date
+from datetime import datetime
 from typing import Optional
 from pydantic import BaseModel
 import uuid6
@@ -14,18 +14,18 @@ class ServiceTypeProps(BaseModel):
     id: UUID
     name: str
     description: Optional[str] = None
-    created_at: date
-    updated_at: Optional[date] = None
-    deleted_at: Optional[date] = None
+    created_at: datetime
+    updated_at: Optional[datetime] = None
+    deleted_at: Optional[datetime] = None
 
 
 class ServiceType:
     id: UUID
     name: str
     description: Optional[str] = None
-    created_at: date
-    updated_at: Optional[date] = None
-    deleted_at: Optional[date] = None
+    created_at: datetime
+    updated_at: Optional[datetime] = None
+    deleted_at: Optional[datetime] = None
 
     def __init__(self, props: ServiceTypeProps):
         self.id = props.id
@@ -42,7 +42,7 @@ class ServiceType:
                 id=uuid6.uuid7(),
                 name=props.name,
                 description=props.description,
-                created_at=date.today(),
+                created_at=datetime.now(),
             )
         )
 

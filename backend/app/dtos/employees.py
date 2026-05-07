@@ -1,4 +1,4 @@
-from datetime import date
+from datetime import datetime, date
 from typing import Optional
 from uuid import UUID
 from pydantic import BaseModel
@@ -24,9 +24,9 @@ class OutputEmployeeDto(BaseModel):
     hourly_bonus: Optional[float] = None
     observations: Optional[str] = None
     position: OutputPositionDto
-    created_at: date
-    updated_at: Optional[date] = None
-    deleted_at: Optional[date] = None
+    created_at: datetime
+    updated_at: Optional[datetime] = None
+    deleted_at: Optional[datetime] = None
 
 
 class CreateEmployeeInputDto(BaseModel):
@@ -60,7 +60,7 @@ class CreateEmployeeOutputDto(BaseModel):
     hourly_bonus: Optional[float] = None
     observations: Optional[str] = None
     position_id: UUID
-    created_at: date
+    created_at: datetime
 
 
 class DeleteEmployeeInputDto(BaseModel):
@@ -109,5 +109,5 @@ class UpdateEmployeeOutputDto(BaseModel):
     hourly_bonus: Optional[float] = None
     observations: Optional[str] = None
     position_id: UUID
-    created_at: date
-    updated_at: date
+    created_at: datetime
+    updated_at: datetime

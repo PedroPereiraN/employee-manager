@@ -1,4 +1,4 @@
-from datetime import date
+from datetime import datetime
 from typing import Optional
 from uuid import UUID
 from pydantic import BaseModel
@@ -13,7 +13,7 @@ class CreatePositionOutputDto(BaseModel):
     id: UUID
     name: str
     description: Optional[str] = None
-    created_at: date
+    created_at: datetime
 
 
 class DeletePositionInputDto(BaseModel):
@@ -40,14 +40,14 @@ class UpdatePositionOutputDto(BaseModel):
     id: UUID
     name: str
     description: Optional[str] = None
-    created_at: date
-    updated_at: date
+    created_at: datetime
+    updated_at: datetime
 
 
 class OutputPositionDto(BaseModel):
     id: UUID
     name: str
     description: Optional[str] = None
-    created_at: date
-    updated_at: Optional[date] = None
-    deleted_at: Optional[date] = None
+    created_at: datetime
+    updated_at: Optional[datetime] = None
+    deleted_at: Optional[datetime] = None

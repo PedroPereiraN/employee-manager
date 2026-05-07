@@ -1,5 +1,5 @@
-from datetime import date
-from typing import List, Optional
+from datetime import datetime
+from typing import Optional
 from uuid import UUID
 from pydantic import BaseModel
 from app.enums.user_role import UserRole
@@ -17,7 +17,7 @@ class CreateUserOutputDto(BaseModel):
     name: str
     email: str
     role: str
-    created_at: date
+    created_at: datetime
 
 
 class ListPaginatedUsersInputDto(BaseModel):
@@ -32,9 +32,9 @@ class OutputUserDto(BaseModel):
     name: str
     email: str
     role: UserRole
-    created_at: date
-    updated_at: Optional[date] = None
-    deleted_at: Optional[date] = None
+    created_at: datetime
+    updated_at: Optional[datetime] = None
+    deleted_at: Optional[datetime] = None
 
 
 class ListUserInputDto(BaseModel):
@@ -53,8 +53,8 @@ class UpdateUserOutputDto(BaseModel):
     name: str
     email: str
     role: str
-    created_at: date
-    updated_at: date
+    created_at: datetime
+    updated_at: datetime
 
 
 class DeleteUserInputDto(BaseModel):

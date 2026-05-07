@@ -1,4 +1,4 @@
-from datetime import date
+from datetime import datetime, date
 from typing import Optional
 from pydantic import BaseModel
 import uuid6
@@ -40,9 +40,9 @@ class EmployeeProps(BaseModel):
     hourly_bonus: Optional[float] = None
     observations: Optional[str] = None
     position_id: UUID
-    created_at: date
-    updated_at: Optional[date] = None
-    deleted_at: Optional[date] = None
+    created_at: datetime
+    updated_at: Optional[datetime] = None
+    deleted_at: Optional[datetime] = None
 
 
 class Employee:
@@ -60,9 +60,9 @@ class Employee:
     hourly_bonus: Optional[float] = None
     observations: Optional[str] = None
     position_id: UUID
-    created_at: date
-    updated_at: Optional[date] = None
-    deleted_at: Optional[date] = None
+    created_at: datetime
+    updated_at: Optional[datetime] = None
+    deleted_at: Optional[datetime] = None
 
     def __init__(self, props: EmployeeProps):
         self.id = props.id
@@ -101,7 +101,7 @@ class Employee:
                 hourly_bonus=props.hourly_bonus,
                 observations=props.observations,
                 position_id=props.position_id,
-                created_at=date.today(),
+                created_at=datetime.now(),
             )
         )
 

@@ -1,4 +1,6 @@
-from datetime import date
+from datetime import datetime
+
+from fastapi import HTTPException, status
 from app.dtos.employees import UpdateEmployeeInputDto, UpdateEmployeeOutputDto
 from app.entities.employee import Employee, EmployeeProps
 from app.protocols.usecase import UseCase
@@ -66,12 +68,18 @@ class UpdateEmployeeUsecase(UseCase[UpdateEmployeeInputDto, UpdateEmployeeOutput
                     else find_employee.position_id
                 ),
                 created_at=find_employee.created_at,
-                updated_at=date.today(),
+                updated_at=datetime.now(),
                 deleted_at=None,
             )
         )
 
         self.employee_repository.update(entity=employee)
+
+        if not employee.updated_at:
+            raise HTTPException(
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                detail="Update error",
+            )
 
         return UpdateEmployeeOutputDto(
             id=employee.id,
@@ -89,5 +97,5 @@ class UpdateEmployeeUsecase(UseCase[UpdateEmployeeInputDto, UpdateEmployeeOutput
             observations=employee.observations,
             position_id=employee.position_id,
             created_at=employee.created_at,
-            updated_at=employee.updated_at if employee.updated_at else date.today(),
+            updated_at=employee.updated_at,
         )

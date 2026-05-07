@@ -1,8 +1,9 @@
+from typing import Optional
 from sqlalchemy.orm import Mapped, mapped_column
 from sqlalchemy.dialects.postgresql import UUID
-from sqlalchemy import String, Enum as SAEnum, Date
+from sqlalchemy import String, Enum as SAEnum, DateTime
 from uuid import UUID as PyUUID
-from datetime import date
+from datetime import datetime
 from app.enums.user_role import UserRole
 from app.config.base import Base
 import uuid6
@@ -18,6 +19,6 @@ class UserModel(Base):
     email: Mapped[str] = mapped_column(String, nullable=False, unique=True)
     password: Mapped[str] = mapped_column(String, nullable=False)
     role: Mapped[UserRole] = mapped_column(SAEnum(UserRole), nullable=False)
-    created_at: Mapped[date] = mapped_column(Date, nullable=False)
-    updated_at: Mapped[date | None] = mapped_column(Date, nullable=True)
-    deleted_at: Mapped[date | None] = mapped_column(Date, nullable=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime, nullable=False)
+    updated_at: Mapped[Optional[datetime]] = mapped_column(DateTime, nullable=True)
+    deleted_at: Mapped[Optional[datetime]] = mapped_column(DateTime, nullable=True)

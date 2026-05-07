@@ -1,4 +1,4 @@
-from datetime import date
+from datetime import datetime
 from typing import Optional
 from pydantic import BaseModel
 import uuid6
@@ -21,9 +21,9 @@ class UserProps(BaseModel):
     email: str
     role: UserRole
     password: str
-    created_at: date
-    updated_at: Optional[date] = None
-    deleted_at: Optional[date] = None
+    created_at: datetime
+    updated_at: Optional[datetime] = None
+    deleted_at: Optional[datetime] = None
 
 
 class User:
@@ -32,9 +32,9 @@ class User:
     email: str
     role: UserRole
     password: str
-    created_at: date
-    updated_at: Optional[date] = None
-    deleted_at: Optional[date] = None
+    created_at: datetime
+    updated_at: Optional[datetime] = None
+    deleted_at: Optional[datetime] = None
 
     def __init__(self, props: UserProps):
         self.id = props.id
@@ -55,7 +55,7 @@ class User:
                 email=props.email,
                 role=props.role,
                 password=HashService().hash(props.password),
-                created_at=date.today(),
+                created_at=datetime.now(),
             )
         )
 

@@ -1,4 +1,6 @@
-from datetime import date
+from datetime import datetime
+
+from fastapi import HTTPException, status
 from app.dtos.service_types import UpdateServiceTypeInputDto, UpdateServiceTypeOutputDto
 from app.entities.service_type import ServiceType, ServiceTypeProps
 from app.protocols.usecase import UseCase
@@ -24,19 +26,23 @@ class UpdateServiceTypeUsecase(
                     else find_service_type.description
                 ),
                 created_at=find_service_type.created_at,
-                updated_at=date.today(),
+                updated_at=datetime.now(),
                 deleted_at=None,
             )
         )
 
         self.service_type_repository.update(entity=service_type)
 
+        if not service_type.updated_at:
+            raise HTTPException(
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                detail="Update error",
+            )
+
         return UpdateServiceTypeOutputDto(
             id=service_type.id,
             name=service_type.name,
             description=service_type.description,
             created_at=service_type.created_at,
-            updated_at=(
-                service_type.updated_at if service_type.updated_at else date.today()
-            ),
+            updated_at=(service_type.updated_at),
         )

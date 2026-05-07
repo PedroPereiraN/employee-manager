@@ -1,4 +1,6 @@
-from datetime import date
+from datetime import datetime
+
+from fastapi import HTTPException, status
 from app.entities.user import User, UserProps
 from app.protocols.usecase import UseCase
 from app.dtos.user import UpdateUserInputDto, UpdateUserOutputDto
@@ -20,12 +22,18 @@ class UpdateUserUsecase(UseCase[UpdateUserInputDto, UpdateUserOutputDto]):
                 password=find_user.password,
                 role=input.role if input.role else find_user.role,
                 created_at=find_user.created_at,
-                updated_at=date.today(),
+                updated_at=datetime.now(),
                 deleted_at=None,
             )
         )
 
         self.user_repository.update(entity=user)
+
+        if not user.updated_at:
+            raise HTTPException(
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                detail="Update error",
+            )
 
         return UpdateUserOutputDto(
             id=user.id,
@@ -33,5 +41,5 @@ class UpdateUserUsecase(UseCase[UpdateUserInputDto, UpdateUserOutputDto]):
             email=user.email,
             role=user.role,
             created_at=user.created_at,
-            updated_at=user.updated_at if user.updated_at else date.today(),
+            updated_at=user.updated_at,
         )

@@ -1,4 +1,5 @@
-from datetime import date
+from datetime import datetime
+from fastapi import HTTPException, status
 from app.dtos.positions import UpdatePositionInputDto, UpdatePositionOutputDto
 from app.entities.position import Position, PositionProps
 from app.protocols.usecase import UseCase
@@ -22,17 +23,23 @@ class UpdatePositionUsecase(UseCase[UpdatePositionInputDto, UpdatePositionOutput
                     else find_position.description
                 ),
                 created_at=find_position.created_at,
-                updated_at=date.today(),
+                updated_at=datetime.now(),
                 deleted_at=None,
             )
         )
 
         self.position_repository.update(entity=position)
 
+        if not position.updated_at:
+            raise HTTPException(
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                detail="Update error",
+            )
+
         return UpdatePositionOutputDto(
             id=position.id,
             name=position.name,
             description=position.description,
             created_at=position.created_at,
-            updated_at=position.updated_at if position.updated_at else date.today(),
+            updated_at=position.updated_at,
         )

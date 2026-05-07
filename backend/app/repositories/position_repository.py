@@ -1,4 +1,4 @@
-from datetime import date
+from datetime import datetime
 from typing import Optional
 from uuid import UUID
 from fastapi import HTTPException, status
@@ -94,7 +94,7 @@ class PositionRepository:
                     status_code=status.HTTP_404_NOT_FOUND,
                     detail="Position not found",
                 )
-            position_model.deleted_at = date.today()
+            position_model.deleted_at = datetime.now()
             self.db.commit()
         except IntegrityError as e:
             self.db.rollback()

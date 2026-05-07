@@ -8,9 +8,9 @@ if TYPE_CHECKING:
 from typing import Optional
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from sqlalchemy.dialects.postgresql import UUID
-from sqlalchemy import ForeignKey, String, Date, Enum as SAEnum, Float
+from sqlalchemy import ForeignKey, String, DateTime, Date, Enum as SAEnum, Float
 from uuid import UUID as PyUUID
-from datetime import date
+from datetime import datetime, date
 from app.config.base import Base
 import uuid6
 
@@ -50,6 +50,6 @@ class EmployeeModel(Base):
     work_sessions: Mapped[list[WorkSessionModel]] = relationship(
         "WorkSessionModel", back_populates="employee"
     )
-    created_at: Mapped[date] = mapped_column(Date, nullable=False)
-    updated_at: Mapped[Optional[date]] = mapped_column(Date, nullable=True)
-    deleted_at: Mapped[Optional[date]] = mapped_column(Date, nullable=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime, nullable=False)
+    updated_at: Mapped[Optional[datetime]] = mapped_column(DateTime, nullable=True)
+    deleted_at: Mapped[Optional[datetime]] = mapped_column(DateTime, nullable=True)

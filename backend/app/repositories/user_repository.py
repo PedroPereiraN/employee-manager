@@ -1,4 +1,4 @@
-from datetime import date
+from datetime import datetime
 from typing import Optional
 from uuid import UUID
 from fastapi import HTTPException, status
@@ -115,7 +115,7 @@ class UserRepository:
                     status_code=status.HTTP_404_NOT_FOUND,
                     detail="User not found",
                 )
-            user_model.deleted_at = date.today()
+            user_model.deleted_at = datetime.now()
             self.db.commit()
         except IntegrityError as e:
             self.db.rollback()
@@ -138,7 +138,7 @@ class UserRepository:
                 )
 
             user_model.password = new_password
-            user_model.updated_at = date.today()
+            user_model.updated_at = datetime.now()
 
             self.db.commit()
         except IntegrityError as e:
