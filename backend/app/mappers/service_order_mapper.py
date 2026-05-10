@@ -60,6 +60,7 @@ class ServiceOrderMapper:
                         WorkSessionHistoryModel(
                             id=h.id,
                             work_session_id=h.work_session_id,
+                            observations=h.observations,
                             status=h.status,
                             occurred_at=h.occurred_at,
                             created_at=h.created_at,
@@ -109,6 +110,7 @@ class ServiceOrderMapper:
                                 id=h.id,
                                 work_session_id=h.work_session_id,
                                 status=h.status,
+                                observations=h.observations,
                                 occurred_at=h.occurred_at,
                                 created_at=h.created_at,
                             )
@@ -161,6 +163,7 @@ class ServiceOrderMapper:
                             id=h.id,
                             work_session_id=h.work_session_id,
                             status=h.status,
+                            observations=h.observations,
                             occurred_at=h.occurred_at,
                             created_at=h.created_at,
                         )
@@ -212,6 +215,7 @@ class ServiceOrderMapper:
                             id=h.id,
                             work_session_id=h.work_session_id,
                             status=h.status,
+                            observations=h.observations,
                             occurred_at=h.occurred_at,
                             created_at=h.created_at,
                         )

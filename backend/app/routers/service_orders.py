@@ -9,6 +9,7 @@ from app.dtos.service_orders import (
     DeleteServiceOrderInputDto,
     ListPaginatedServiceOrdersInputDto,
     OutputServiceOrderDto,
+    ReportServiceOrderProgressInputDto,
 )
 from app.usecases.service_orders.create_service_order_usecase import (
     CreateServiceOrderUsecase,
@@ -29,6 +30,9 @@ from app.usecases.service_orders.list_paginated_service_orders_usecase import (
 )
 from app.usecases.service_orders.list_service_order_usecase import (
     ListServiceOrderUsecase,
+)
+from app.usecases.service_orders.report_service_order_progress_usecase import (
+    ReportServiceOrderProgressUsecase,
 )
 
 service_order_router = APIRouter(prefix="/service_orders", tags=["service_orders"])
@@ -95,3 +99,18 @@ async def delete_service_order(
     return DeleteServiceOrderUsecase(
         service_order_repository=service_order_repository
     ).execute(DeleteServiceOrderInputDto(id=id))
+
+
+@service_order_router.post(
+    "/report-service-order-progress", status_code=204, response_model=None
+)
+async def report_service_order_progress(
+    body: ReportServiceOrderProgressInputDto,
+    db: Session = Depends(get_db),
+    _: str = Depends(get_token),
+):
+    service_order_repository = ServiceOrderRepository(db=db)
+
+    return ReportServiceOrderProgressUsecase(
+        service_order_repository=service_order_repository
+    ).execute(body)

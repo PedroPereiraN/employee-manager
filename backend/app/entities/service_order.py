@@ -137,6 +137,7 @@ class ServiceOrder:
                             id=uuid6.uuid7(),
                             work_session_id=ws_id,
                             status=history.status,
+                            observations=history.observations,
                             occurred_at=history.occurred_at,
                             created_at=now,
                         )
