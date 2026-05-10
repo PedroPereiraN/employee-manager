@@ -106,7 +106,7 @@ class ServiceOrderStatusHistoryModel(Base):
     id: Mapped[PyUUID] = mapped_column(
         UUID(as_uuid=True), primary_key=True, default=uuid6.uuid7
     )
-    reason: Mapped[str] = mapped_column(String, nullable=False)
+    reason: Mapped[Optional[str]] = mapped_column(String, nullable=True)
     status: Mapped[ServiceOrderStatus] = mapped_column(
         SAEnum(ServiceOrderStatus), nullable=False
     )

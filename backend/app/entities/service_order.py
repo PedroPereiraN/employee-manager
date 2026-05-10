@@ -8,7 +8,7 @@ from app.enums.work_session_status import WorkSessionStatus
 
 
 class CreateServiceOrderStatusHistoryProps(BaseModel):
-    reason: str
+    reason: Optional[str] = None
     status: ServiceOrderStatus
 
 
@@ -38,7 +38,7 @@ class CreateServiceOrderProps(BaseModel):
 class ServiceOrderStatusHistoryProps(BaseModel):
     id: UUID
     service_order_id: UUID
-    reason: str
+    reason: Optional[str] = None
     status: ServiceOrderStatus
     created_at: datetime
 

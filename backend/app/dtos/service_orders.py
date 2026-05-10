@@ -12,7 +12,7 @@ from app.enums.work_session_status import WorkSessionStatus
 class OutputServiceOrderStatusHistoryDto(BaseModel):
     id: UUID
     service_order_id: UUID
-    reason: str
+    reason: Optional[str] = None
     status: ServiceOrderStatus
     created_at: datetime
 
@@ -74,14 +74,14 @@ class CreateServiceOrderInputDto(BaseModel):
     finished_at: Optional[datetime] = None
     total_hours: Optional[float] = None
     service_type_id: Optional[UUID] = None
-    work_sessions: List[CreateWorkSessionInputDto]
-    status_history: CreateServiceOrderStatusHistoryInputDto
+    work_sessions: Optional[List[CreateWorkSessionInputDto]] = None
+    status_history: Optional[CreateServiceOrderStatusHistoryInputDto] = None
 
 
 class CreateServiceOrderStatusHistoryOutputDto(BaseModel):
     id: UUID
     service_order_id: UUID
-    reason: str
+    reason: Optional[str] = None
     status: ServiceOrderStatus
     created_at: datetime
 
@@ -156,6 +156,6 @@ class ReportWorkSessionProgressInputDto(BaseModel):
 class ReportServiceOrderProgressInputDto(BaseModel):
     service_order_id: UUID
     status: ServiceOrderStatus
-    new_work_sessions: List[ReportWorkSessionProgressInputDto]
-    new_histories: List[ReportNewWorkSessionHistoryProgressInputDto]
-    status_history: ReportServiceOrderStatusHistoryProgressInputDto
+    new_work_sessions: Optional[List[ReportWorkSessionProgressInputDto]] = None
+    new_histories: Optional[List[ReportNewWorkSessionHistoryProgressInputDto]] = None
+    status_history: Optional[ReportServiceOrderStatusHistoryProgressInputDto] = None

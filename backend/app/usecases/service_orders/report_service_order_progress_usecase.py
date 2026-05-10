@@ -17,40 +17,45 @@ class ReportServiceOrderProgressUsecase(
     def execute(self, input: ReportServiceOrderProgressInputDto) -> None:
         now = datetime.now()
 
-        new_histories = [
-            WorkSessionHistoryProps(
-                id=uuid6.uuid7(),
-                work_session_id=history.work_session_id,
-                status=history.status,
-                observations=history.observations,
-                occurred_at=history.occurred_at,
-                created_at=now,
-            )
-            for history in input.new_histories
-        ]
+        new_histories = (
+            [
+                WorkSessionHistoryProps(
+                    id=uuid6.uuid7(),
+                    work_session_id=history.work_session_id,
+                    status=history.status,
+                    observations=history.observations,
+                    occurred_at=history.occurred_at,
+                    created_at=now,
+                )
+                for history in input.new_histories
+            ]
+            if input.new_histories
+            else []
+        )
 
         new_work_sessions = []
-        for ws in input.new_work_sessions:
-            ws_id = uuid6.uuid7()
-            new_work_sessions.append(
-                WorkSessionProps(
-                    id=ws_id,
-                    service_order_id=input.service_order_id,
-                    employee_id=ws.employee_id,
-                    created_at=now,
-                    histories=[
-                        WorkSessionHistoryProps(
-                            id=uuid6.uuid7(),
-                            work_session_id=ws_id,
-                            status=history.status,
-                            observations=history.observations,
-                            occurred_at=history.occurred_at,
-                            created_at=now,
-                        )
-                        for history in ws.histories
-                    ],
+        if input.new_work_sessions:
+            for ws in input.new_work_sessions:
+                ws_id = uuid6.uuid7()
+                new_work_sessions.append(
+                    WorkSessionProps(
+                        id=ws_id,
+                        service_order_id=input.service_order_id,
+                        employee_id=ws.employee_id,
+                        created_at=now,
+                        histories=[
+                            WorkSessionHistoryProps(
+                                id=uuid6.uuid7(),
+                                work_session_id=ws_id,
+                                status=history.status,
+                                observations=history.observations,
+                                occurred_at=history.occurred_at,
+                                created_at=now,
+                            )
+                            for history in ws.histories
+                        ],
+                    )
                 )
-            )
 
         self.service_order_repository.report_progress(
             service_order_id=input.service_order_id,

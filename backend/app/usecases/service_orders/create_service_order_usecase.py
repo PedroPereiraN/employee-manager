@@ -36,22 +36,28 @@ class CreateServiceOrderUsecase(
                 service_type_id=input.service_type_id,
                 status_history=CreateServiceOrderStatusHistoryProps(
                     status=input.status,
-                    reason=input.status_history.reason,
+                    reason=(
+                        input.status_history.reason if input.status_history else None
+                    ),
                 ),
-                work_sessions=[
-                    CreateWorkSessionProps(
-                        employee_id=ws.employee_id,
-                        histories=[
-                            CreateWorkSessionHistoryProps(
-                                observations=h.observations,
-                                status=h.status,
-                                occurred_at=h.occurred_at,
-                            )
-                            for h in ws.histories
-                        ],
-                    )
-                    for ws in input.work_sessions
-                ],
+                work_sessions=(
+                    [
+                        CreateWorkSessionProps(
+                            employee_id=ws.employee_id,
+                            histories=[
+                                CreateWorkSessionHistoryProps(
+                                    observations=h.observations,
+                                    status=h.status,
+                                    occurred_at=h.occurred_at,
+                                )
+                                for h in ws.histories
+                            ],
+                        )
+                        for ws in input.work_sessions
+                    ]
+                    if input.work_sessions
+                    else []
+                ),
             )
         )
         self.service_order_repository.create(entity=service_order)
@@ -69,7 +75,7 @@ class CreateServiceOrderUsecase(
                 CreateServiceOrderStatusHistoryOutputDto(
                     id=sh.id,
                     service_order_id=sh.service_order_id,
-                    reason=sh.reason,
+                    reason=sh.reason if sh.reason else None,
                     status=sh.status,
                     created_at=sh.created_at,
                 )
