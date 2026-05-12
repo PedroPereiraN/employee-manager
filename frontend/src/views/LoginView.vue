@@ -1,9 +1,11 @@
 <script setup lang="ts">
 import Fieldset from '@/components/ui/Fieldset.vue'
 import Input from '@/components/ui/Input.vue'
+import { Icon } from '@iconify/vue'
 import { useForm } from 'vee-validate'
 import { toTypedSchema } from '@vee-validate/zod'
 import * as z from 'zod'
+import { auth } from '@/services/queries'
 
 const schema = z.object({
   email: z.email(),
@@ -17,8 +19,20 @@ const { handleSubmit, errors, defineField } = useForm({
 const [email, emailAttrs] = defineField('email')
 const [password, passwordAttrs] = defineField('password')
 
-const onSubmit = handleSubmit((values) => {
-  console.log(values)
+const onSubmit = handleSubmit(async (values) => {
+  await auth(values)
+    .then((res) => {
+      if (!res.data.access_token) {
+        throw new Error('Token not informed')
+      }
+
+      localStorage.setItem('token', res.data.access_token)
+      const url = new URL('/dashboard', window.location.origin)
+      window.location.href = url.toString()
+    })
+    .catch((error) => {
+      console.error(error)
+    })
 })
 </script>
 
@@ -36,19 +50,7 @@ const onSubmit = handleSubmit((values) => {
       <!-- Logo -->
       <div class="relative z-10 flex items-center gap-3">
         <div class="w-9 h-9 rounded-xl bg-white/20 flex items-center justify-center">
-          <svg
-            class="w-5 h-5 text-white"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="2"
-            viewBox="0 0 24 24"
-          >
-            <path
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0"
-            />
-          </svg>
+          <Icon icon="heroicons:users" class="w-5 h-5 text-white" />
         </div>
         <span class="text-lg font-semibold tracking-wide">Employee Manager</span>
       </div>
@@ -66,13 +68,7 @@ const onSubmit = handleSubmit((values) => {
             :key="i"
             class="flex items-center gap-2 bg-white/10 rounded-full px-4 py-2 text-sm"
           >
-            <svg class="w-4 h-4 text-blue-200" fill="currentColor" viewBox="0 0 20 20">
-              <path
-                fill-rule="evenodd"
-                d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
-                clip-rule="evenodd"
-              />
-            </svg>
+            <Icon icon="heroicons:check-solid" class="w-4 h-4 text-blue-200" />
             <span>{{ ['Easy to use', 'Secure', 'Fast'][i - 1] }}</span>
           </div>
         </div>
