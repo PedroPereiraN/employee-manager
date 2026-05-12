@@ -2,6 +2,6 @@
 
 <template>
   <main>
-    <section>askdjakdsajsak</section>
+    <section>Work in progress.</section>
   </main>
 </template>
