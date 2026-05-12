@@ -1,7 +1,7 @@
 <script setup lang="ts"></script>
 
 <template>
-  <main>
+  <div>
     <section>Work in progress.</section>
-  </main>
+  </div>
 </template>

@@ -37,7 +37,7 @@ const onSubmit = handleSubmit(async (values) => {
 </script>
 
 <template>
-  <main class="flex h-screen w-screen overflow-hidden">
+  <div class="flex h-screen w-screen overflow-hidden">
     <!-- Left branding panel -->
     <section
       class="hidden lg:flex w-3/5 relative bg-gradient-to-br from-blue-700 via-blue-600 to-indigo-700 flex-col justify-between p-12 text-white overflow-hidden"
@@ -121,5 +121,5 @@ const onSubmit = handleSubmit(async (values) => {
         </form>
       </div>
     </section>
-  </main>
+  </div>
 </template>
