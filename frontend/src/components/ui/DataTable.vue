@@ -11,24 +11,42 @@ import {
   PaginationPrev,
   PaginationRoot,
 } from 'reka-ui'
+import Select, { type SelectOption } from '@/components/ui/Select.vue'
 
 export type Column<T> = {
   key: (keyof T & string) | string
   label: string
 }
 
+const PAGE_SIZE_OPTIONS: SelectOption[] = [
+  { value: '5', label: '5' },
+  { value: '10', label: '10' },
+  { value: '20', label: '20' },
+  { value: '50', label: '50' },
+]
+
 const props = defineProps<{
   columns: Column<T>[]
   data: T[]
   total: number
-  itemsPerPage: number
 }>()
 
 const page = defineModel<number>('page', { default: 1 })
+const itemsPerPage = defineModel<number>('itemsPerPage', { default: 10 })
 
-const rangeStart = computed(() => (props.total === 0 ? 0 : (page.value - 1) * props.itemsPerPage + 1))
-const rangeEnd = computed(() => Math.min(page.value * props.itemsPerPage, props.total))
-const fillerCount = computed(() => Math.max(0, props.itemsPerPage - props.data.length))
+const pageSizeString = computed({
+  get: () => String(itemsPerPage.value),
+  set: (val: string) => {
+    itemsPerPage.value = Number(val)
+    page.value = 1
+  },
+})
+
+const rangeStart = computed(() =>
+  props.total === 0 ? 0 : (page.value - 1) * itemsPerPage.value + 1,
+)
+const rangeEnd = computed(() => Math.min(page.value * itemsPerPage.value, props.total))
+const fillerCount = computed(() => Math.max(0, itemsPerPage.value - props.data.length))
 </script>
 
 <template>
@@ -58,29 +76,15 @@ const fillerCount = computed(() => Math.max(0, props.itemsPerPage - props.data.l
             :key="rowIndex"
             class="hover:bg-gray-50 transition-colors"
           >
-            <td
-              v-for="col in props.columns"
-              :key="col.key"
-              class="px-4 py-3 text-gray-700"
-            >
+            <td v-for="col in props.columns" :key="col.key" class="px-4 py-3 text-gray-700">
               <slot :name="col.key" :value="row[col.key]" :row="row">
                 {{ row[col.key] ?? '—' }}
               </slot>
             </td>
           </tr>
           <!-- Filler rows to keep table height consistent -->
-          <tr
-            v-for="i in fillerCount"
-            :key="`filler-${i}`"
-            class="pointer-events-none select-none"
-          >
-            <td
-              v-for="col in props.columns"
-              :key="col.key"
-              class="px-4 py-3"
-            >
-              &nbsp;
-            </td>
+          <tr v-for="i in fillerCount" :key="`filler-${i}`" class="pointer-events-none select-none">
+            <td v-for="col in props.columns" :key="col.key" class="px-4 py-3">&nbsp;</td>
           </tr>
         </tbody>
       </table>
@@ -92,65 +96,77 @@ const fillerCount = computed(() => Math.max(0, props.itemsPerPage - props.data.l
         {{
           props.total === 0
             ? 'No results'
-            : `Showing ${rangeStart}–${rangeEnd} of ${props.total} result${props.total === 1 ? '' : 's'} (${props.itemsPerPage} per page)`
+            : `Showing ${rangeStart}–${rangeEnd} of ${props.total} result${props.total === 1 ? '' : 's'}`
         }}
       </span>
 
-      <PaginationRoot
-        v-model:page="page"
-        :total="props.total"
-        :items-per-page="props.itemsPerPage"
-        :sibling-count="1"
-        show-edges
-      >
-        <PaginationList v-slot="{ items }" class="flex items-center gap-1">
-          <PaginationFirst
-            class="w-8 h-8 flex items-center justify-center rounded-lg border border-gray-200 text-gray-500 hover:bg-gray-100 hover:text-gray-700 disabled:opacity-40 disabled:cursor-not-allowed transition-colors cursor-pointer"
-          >
-            <Icon icon="lucide:chevrons-left" width="14" height="14" />
-          </PaginationFirst>
+      <div class="flex items-center gap-3">
+        <div class="flex items-center gap-2">
+          <span>Rows per page</span>
+          <Select v-model="pageSizeString" :options="PAGE_SIZE_OPTIONS" />
+        </div>
 
-          <PaginationPrev
-            class="w-8 h-8 flex items-center justify-center rounded-lg border border-gray-200 text-gray-500 hover:bg-gray-100 hover:text-gray-700 disabled:opacity-40 disabled:cursor-not-allowed transition-colors cursor-pointer"
-          >
-            <Icon icon="lucide:chevron-left" width="14" height="14" />
-          </PaginationPrev>
-
-          <template v-for="item in items" :key="item.type === 'page' ? item.value : `ellipsis-${item.key}`">
-            <PaginationListItem
-              v-if="item.type === 'page'"
-              :value="item.value"
-              class="w-8 h-8 flex items-center justify-center rounded-lg border text-sm font-medium transition-colors cursor-pointer"
-              :class="item.value === page
-                ? 'border-indigo-500 bg-indigo-500 text-white'
-                : 'border-gray-200 text-gray-600 hover:bg-gray-100'"
+        <PaginationRoot
+          v-model:page="page"
+          :total="props.total"
+          :items-per-page="itemsPerPage"
+          :sibling-count="1"
+          show-edges
+        >
+          <PaginationList v-slot="{ items }" class="flex items-center gap-1">
+            <PaginationFirst
+              class="w-8 h-8 flex items-center justify-center rounded-lg border border-gray-200 text-gray-500 hover:bg-gray-100 hover:text-gray-700 disabled:opacity-40 disabled:cursor-not-allowed transition-colors cursor-pointer"
             >
-              {{ item.value }}
-            </PaginationListItem>
+              <Icon icon="lucide:chevrons-left" width="14" height="14" />
+            </PaginationFirst>
 
-            <PaginationEllipsis
-              v-else
-              :key="item.key"
-              :index="item.key"
-              class="w-8 h-8 flex items-center justify-center text-gray-400 select-none"
+            <PaginationPrev
+              class="w-8 h-8 flex items-center justify-center rounded-lg border border-gray-200 text-gray-500 hover:bg-gray-100 hover:text-gray-700 disabled:opacity-40 disabled:cursor-not-allowed transition-colors cursor-pointer"
             >
-              &#8230;
-            </PaginationEllipsis>
-          </template>
+              <Icon icon="lucide:chevron-left" width="14" height="14" />
+            </PaginationPrev>
 
-          <PaginationNext
-            class="w-8 h-8 flex items-center justify-center rounded-lg border border-gray-200 text-gray-500 hover:bg-gray-100 hover:text-gray-700 disabled:opacity-40 disabled:cursor-not-allowed transition-colors cursor-pointer"
-          >
-            <Icon icon="lucide:chevron-right" width="14" height="14" />
-          </PaginationNext>
+            <template
+              v-for="(item, index) in items"
+              :key="item.type === 'page' ? item.value : `ellipsis-${index}`"
+            >
+              <PaginationListItem
+                v-if="item.type === 'page'"
+                :value="item.value"
+                class="w-8 h-8 flex items-center justify-center rounded-lg border text-sm font-medium transition-colors cursor-pointer"
+                :class="
+                  item.value === page
+                    ? 'border-indigo-500 bg-indigo-500 text-white'
+                    : 'border-gray-200 text-gray-600 hover:bg-gray-100'
+                "
+              >
+                {{ item.value }}
+              </PaginationListItem>
 
-          <PaginationLast
-            class="w-8 h-8 flex items-center justify-center rounded-lg border border-gray-200 text-gray-500 hover:bg-gray-100 hover:text-gray-700 disabled:opacity-40 disabled:cursor-not-allowed transition-colors cursor-pointer"
-          >
-            <Icon icon="lucide:chevrons-right" width="14" height="14" />
-          </PaginationLast>
-        </PaginationList>
-      </PaginationRoot>
+              <PaginationEllipsis
+                v-else
+                :key="index"
+                :index="index"
+                class="w-8 h-8 flex items-center justify-center text-gray-400 select-none"
+              >
+                &#8230;
+              </PaginationEllipsis>
+            </template>
+
+            <PaginationNext
+              class="w-8 h-8 flex items-center justify-center rounded-lg border border-gray-200 text-gray-500 hover:bg-gray-100 hover:text-gray-700 disabled:opacity-40 disabled:cursor-not-allowed transition-colors cursor-pointer"
+            >
+              <Icon icon="lucide:chevron-right" width="14" height="14" />
+            </PaginationNext>
+
+            <PaginationLast
+              class="w-8 h-8 flex items-center justify-center rounded-lg border border-gray-200 text-gray-500 hover:bg-gray-100 hover:text-gray-700 disabled:opacity-40 disabled:cursor-not-allowed transition-colors cursor-pointer"
+            >
+              <Icon icon="lucide:chevrons-right" width="14" height="14" />
+            </PaginationLast>
+          </PaginationList>
+        </PaginationRoot>
+      </div>
     </div>
   </div>
 </template>
