@@ -8,6 +8,8 @@ import EmployeesForm from '@/views/employees/Form.vue'
 import ServiceTypesView from '@/views/service-types/ServiceTypesView.vue'
 import ServiceTypesForm from '@/views/service-types/Form.vue'
 import ServiceOrdersView from '@/views/service-orders/ServiceOrdersView.vue'
+import UsersView from '@/views/users/UsersView.vue'
+import UsersForm from '@/views/users/Form.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -74,6 +76,22 @@ const router = createRouter({
       path: '/service-orders',
       name: 'service-orders',
       component: ServiceOrdersView,
+    },
+    {
+      path: '/users',
+      name: 'users',
+      component: UsersView,
+    },
+    {
+      path: '/users/new',
+      name: 'users-new',
+      component: UsersForm,
+    },
+    {
+      path: '/users/:id',
+      name: 'users-visualize',
+      component: UsersForm,
+      props: true,
     },
   ],
 })

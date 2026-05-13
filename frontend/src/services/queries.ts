@@ -5,6 +5,7 @@ import type {
   PaginatedServiceOrder,
   Position,
   ServiceType,
+  User,
 } from '@/utils/api-types'
 
 export const auth = async ({ email, password }: { email: string; password: string }) =>
@@ -160,6 +161,45 @@ export const editEmployee = async (data: {
   position_id?: string | null
 }) => {
   const res = await appClient.put('/employee', data)
+  return res.data
+}
+
+export const getUsers = async ({
+  page,
+  size,
+}: {
+  page: number
+  size: number
+}): Promise<PaginatedResponse<User>> => {
+  const res = await appClient.get<PaginatedResponse<User>>('/users', {
+    params: { page, size },
+  })
+  return res.data
+}
+
+export const getUser = async (id: string): Promise<User> => {
+  const res = await appClient.get<User>(`/users/${id}`)
+  return res.data
+}
+
+export const createUser = async (data: {
+  name: string
+  email: string
+  role: string
+  password?: string
+}) => {
+  const res = await appClient.post('/users', data)
+  return res.data
+}
+
+export const editUser = async (data: {
+  id: string
+  name?: string
+  email?: string
+  role?: string
+  password?: string
+}) => {
+  const res = await appClient.put('/users', data)
   return res.data
 }
 
