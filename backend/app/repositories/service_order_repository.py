@@ -4,7 +4,7 @@ from fastapi import HTTPException, status
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session, joinedload
 from app.dtos.paginated_response import PaginatedResponseDto
-from app.dtos.service_orders import OutputServiceOrderDto
+from app.dtos.service_orders import OutputPaginatedServiceOrderDto
 from app.entities.service_order import (
     ServiceOrder,
     ServiceOrderStatusHistoryProps,
@@ -12,15 +12,12 @@ from app.entities.service_order import (
     WorkSessionProps,
 )
 from app.enums.service_order_status import ServiceOrderStatus
-from app.mappers.employee_mapper import EmployeeMapper
-from app.mappers.position_mapper import PositionMapper
 from app.mappers.service_order_mapper import ServiceOrderMapper
 from app.mappers.service_type_mapper import ServiceTypeMapper
 from math import ceil
-from sqlalchemy import func
+from sqlalchemy import func, select
 from datetime import datetime
 
-from app.models.employee import EmployeeModel
 from app.models.service_order import (
     ServiceOrderModel,
     ServiceOrderStatusHistoryModel,
@@ -63,15 +60,16 @@ class ServiceOrderRepository:
         page: int = 1,
         size: int = 10,
         filter: Optional[str] = None,
-    ) -> PaginatedResponseDto[OutputServiceOrderDto]:
+    ) -> PaginatedResponseDto[OutputPaginatedServiceOrderDto]:
+        work_sessions_count = (
+            select(func.count(WorkSessionModel.id))
+            .where(WorkSessionModel.service_order_id == ServiceOrderModel.id)
+            .correlate(ServiceOrderModel)
+            .scalar_subquery()
+        )
         query = (
-            self.db.query(ServiceOrderModel)
-            .options(
-                joinedload(ServiceOrderModel.service_type),
-                joinedload(ServiceOrderModel.work_sessions).joinedload(
-                    WorkSessionModel.histories
-                ),
-            )
+            self.db.query(ServiceOrderModel, work_sessions_count.label("work_sessions_quantity"))
+            .options(joinedload(ServiceOrderModel.service_type))
             .filter(ServiceOrderModel.deleted_at.is_(None))
         )
         if filter:
@@ -86,36 +84,17 @@ class ServiceOrderRepository:
         query = query.order_by(ServiceOrderModel.created_at.asc())
         items = query.offset((page - 1) * size).limit(size).all()
 
-        employee_ids = {ws.employee_id for item in items for ws in item.work_sessions}
-        employees = (
-            (
-                self.db.query(EmployeeModel)
-                .options(joinedload(EmployeeModel.position))
-                .filter(EmployeeModel.id.in_(employee_ids))
-                .all()
-            )
-            if employee_ids
-            else []
-        )
-        employees_map = {
-            e.id: EmployeeMapper.model_to_output(
-                model=e,
-                position_output=PositionMapper.model_to_output(model=e.position),
-            )
-            for e in employees
-        }
-
         items_output = [
-            ServiceOrderMapper.model_to_output(
+            ServiceOrderMapper.model_to_paginated_output(
                 model=item,
-                employees_output=employees_map,
+                work_sessions_quantity=work_sessions_quantity,
                 service_type_output=(
                     ServiceTypeMapper.model_to_output(model=item.service_type)
                     if item.service_type
                     else None
                 ),
             )
-            for item in items
+            for item, work_sessions_quantity in items
         ]
         pages = ceil(total / size) if total > 0 else 1
         return PaginatedResponseDto(

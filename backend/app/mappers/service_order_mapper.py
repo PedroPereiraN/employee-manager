@@ -2,6 +2,7 @@ from typing import Optional
 from uuid import UUID
 from app.dtos.employees import OutputEmployeeDto
 from app.dtos.service_orders import (
+    OutputPaginatedServiceOrderDto,
     OutputServiceOrderDto,
     OutputServiceOrderStatusHistoryDto,
     OutputWorkSessionDto,
@@ -224,4 +225,25 @@ class ServiceOrderMapper:
                 )
                 for ws in entity.work_sessions
             ],
+        )
+
+    @staticmethod
+    def model_to_paginated_output(
+        model: ServiceOrderModel,
+        work_sessions_quantity: int,
+        service_type_output: Optional[OutputServiceTypeDto] = None,
+    ) -> OutputPaginatedServiceOrderDto:
+        return OutputPaginatedServiceOrderDto(
+            id=model.id,
+            order_number=model.order_number,
+            status=model.status,
+            description=model.description,
+            started_at=model.started_at,
+            finished_at=model.finished_at,
+            total_hours=model.total_hours,
+            service_type=service_type_output,
+            created_at=model.created_at,
+            updated_at=model.updated_at,
+            deleted_at=model.deleted_at,
+            work_sessions_quantity=work_sessions_quantity,
         )

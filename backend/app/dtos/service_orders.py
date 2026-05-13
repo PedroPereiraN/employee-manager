@@ -36,6 +36,21 @@ class OutputWorkSessionDto(BaseModel):
     histories: List[OutputWorkSessionHistoryDto]
 
 
+class OutputPaginatedServiceOrderDto(BaseModel):
+    id: UUID
+    order_number: str
+    status: ServiceOrderStatus
+    description: Optional[str] = None
+    started_at: Optional[datetime] = None
+    finished_at: Optional[datetime] = None
+    total_hours: Optional[float] = None
+    service_type: Optional[OutputServiceTypeDto] = None
+    created_at: datetime
+    updated_at: Optional[datetime] = None
+    deleted_at: Optional[datetime] = None
+    work_sessions_quantity: int
+
+
 class OutputServiceOrderDto(BaseModel):
     id: UUID
     order_number: str

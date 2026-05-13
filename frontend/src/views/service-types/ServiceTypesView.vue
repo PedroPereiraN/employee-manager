@@ -4,18 +4,18 @@ import { useQuery } from '@tanstack/vue-query'
 import DataTable, { type Column } from '@/components/ui/DataTable.vue'
 import RowActionsPopover, { type RowAction } from '@/components/ui/RowActionsPopover.vue'
 import Button from '@/components/ui/Button.vue'
-import { getPositions } from '@/services/queries'
-import type { Position } from '@/utils/api-types'
+import { getServiceTypes } from '@/services/queries'
+import type { ServiceType } from '@/utils/api-types'
 
 const page = ref(1)
 const pageSize = ref(10)
 
 const { data, isLoading } = useQuery({
-  queryKey: ['positions', page, pageSize],
-  queryFn: () => getPositions({ page: page.value, size: pageSize.value }),
+  queryKey: ['service-types', page, pageSize],
+  queryFn: () => getServiceTypes({ page: page.value, size: pageSize.value }),
 })
 
-const columns: Column<Position>[] = [
+const columns: Column<ServiceType>[] = [
   { key: 'name', label: 'Name' },
   { key: 'created_at', label: 'Created at' },
   { key: 'actions', label: 'Actions' },
@@ -24,11 +24,11 @@ const columns: Column<Position>[] = [
 const formatDate = (iso: string) =>
   new Intl.DateTimeFormat('en-US', { dateStyle: 'medium' }).format(new Date(iso))
 
-const onView = (row: Position) => {
+const onView = (row: ServiceType) => {
   console.log('view', row)
 }
 
-const onDelete = (row: Position) => {
+const onDelete = (row: ServiceType) => {
   console.log('delete', row)
 }
 
@@ -37,7 +37,7 @@ const rowActions: RowAction[] = [
   { key: 'delete', label: 'Delete', icon: 'lucide:trash-2', variant: 'danger' },
 ]
 
-const onAction = (key: string, row: Position) => {
+const onAction = (key: string, row: ServiceType) => {
   if (key === 'view') onView(row)
   else if (key === 'delete') onDelete(row)
 }
@@ -47,11 +47,11 @@ const onAction = (key: string, row: Position) => {
   <div class="p-8">
     <div class="mb-6 flex items-center justify-between">
       <div>
-        <h1 class="text-2xl font-bold text-gray-900">Positions</h1>
-        <p class="text-sm text-gray-500 mt-1">Manage all job positions in your organization.</p>
+        <h1 class="text-2xl font-bold text-gray-900">Service Types</h1>
+        <p class="text-sm text-gray-500 mt-1">Manage all service types in your organization.</p>
       </div>
 
-      <Button to="positions/new" icon="lucide:plus">New position</Button>
+      <Button to="service-types/new" icon="lucide:plus">New service type</Button>
     </div>
 
     <div v-if="isLoading" class="flex items-center justify-center py-20 text-gray-400 text-sm">

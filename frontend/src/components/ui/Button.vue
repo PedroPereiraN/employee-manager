@@ -1,14 +1,16 @@
 <script setup lang="ts">
 import { Icon } from '@iconify/vue'
+import { RouterLink } from 'vue-router'
 
 interface Props {
   variant?: 'primary' | 'secondary' | 'danger' | 'ghost'
   type?: 'button' | 'submit' | 'reset'
   icon?: string
   disabled?: boolean
+  to?: string | object
 }
 
-const { variant = 'primary', type = 'button', icon, disabled = false } = defineProps<Props>()
+const { variant = 'primary', type = 'button', icon, disabled = false, to } = defineProps<Props>()
 
 const variantClasses: Record<NonNullable<Props['variant']>, string> = {
   primary: 'bg-indigo-600 hover:bg-indigo-700 active:bg-indigo-800 text-white',
@@ -19,13 +21,15 @@ const variantClasses: Record<NonNullable<Props['variant']>, string> = {
 </script>
 
 <template>
-  <button
-    :type="type"
-    :disabled="disabled"
+  <component
+    :is="to ? RouterLink : 'button'"
+    :to="to"
+    :type="to ? undefined : type"
+    :disabled="to ? undefined : disabled"
     class="flex items-center gap-2 px-4 py-2 text-sm font-semibold rounded-lg transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
     :class="variantClasses[variant]"
   >
     <Icon v-if="icon" :icon="icon" width="16" height="16" />
     <slot />
-  </button>
+  </component>
 </template>

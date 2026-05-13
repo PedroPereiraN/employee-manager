@@ -2,6 +2,9 @@ import { createRouter, createWebHistory } from 'vue-router'
 import LoginView from '@/views/LoginView.vue'
 import DashboardView from '@/views/dashboard/DashboardView.vue'
 import PositionsView from '@/views/positions/PositionsView.vue'
+import EmployeesView from '@/views/employees/EmployeesView.vue'
+import ServiceTypesView from '@/views/service-types/ServiceTypesView.vue'
+import ServiceOrdersView from '@/views/service-orders/ServiceOrdersView.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -20,6 +23,21 @@ const router = createRouter({
       path: '/positions',
       name: 'positions',
       component: PositionsView,
+    },
+    {
+      path: '/employees',
+      name: 'employees',
+      component: EmployeesView,
+    },
+    {
+      path: '/service-types',
+      name: 'service-types',
+      component: ServiceTypesView,
+    },
+    {
+      path: '/service-orders',
+      name: 'service-orders',
+      component: ServiceOrdersView,
     },
   ],
 })

@@ -8,6 +8,7 @@ from app.dtos.service_orders import (
     CreateServiceOrderOutputDto,
     DeleteServiceOrderInputDto,
     ListPaginatedServiceOrdersInputDto,
+    OutputPaginatedServiceOrderDto,
     OutputServiceOrderDto,
     ReportServiceOrderProgressInputDto,
 )
@@ -54,7 +55,7 @@ async def create_service_order(
 
 
 @service_order_router.get(
-    "/", status_code=200, response_model=PaginatedResponseDto[OutputServiceOrderDto]
+    "/", status_code=200, response_model=PaginatedResponseDto[OutputPaginatedServiceOrderDto]
 )
 async def list_paginated_service_orders(
     page: int = 1,

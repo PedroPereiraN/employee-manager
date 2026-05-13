@@ -1,7 +1,7 @@
 from app.dtos.paginated_response import PaginatedResponseDto
 from app.dtos.service_orders import (
     ListPaginatedServiceOrdersInputDto,
-    OutputServiceOrderDto,
+    OutputPaginatedServiceOrderDto,
 )
 from app.protocols.usecase import UseCase
 from app.repositories.service_order_repository import ServiceOrderRepository
@@ -9,7 +9,8 @@ from app.repositories.service_order_repository import ServiceOrderRepository
 
 class ListPaginatedServiceOrdersUsecase(
     UseCase[
-        ListPaginatedServiceOrdersInputDto, PaginatedResponseDto[OutputServiceOrderDto]
+        ListPaginatedServiceOrdersInputDto,
+        PaginatedResponseDto[OutputPaginatedServiceOrderDto],
     ]
 ):
     def __init__(self, service_order_repository: ServiceOrderRepository) -> None:
@@ -17,7 +18,7 @@ class ListPaginatedServiceOrdersUsecase(
 
     def execute(
         self, input: ListPaginatedServiceOrdersInputDto
-    ) -> PaginatedResponseDto[OutputServiceOrderDto]:
+    ) -> PaginatedResponseDto[OutputPaginatedServiceOrderDto]:
 
         output = self.service_order_repository.list_paginated(
             page=input.page,
