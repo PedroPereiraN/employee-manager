@@ -6,7 +6,10 @@ import RowActionsPopover, { type RowAction } from '@/components/ui/RowActionsPop
 import Button from '@/components/ui/Button.vue'
 import { getServiceTypes } from '@/services/queries'
 import type { ServiceType } from '@/utils/api-types'
-import { CREATE_SERVICE_TYPES } from '@/utils/paths'
+import { CREATE_SERVICE_TYPES, VIEW_SERVICE_TYPES } from '@/utils/paths'
+import { useRouter } from 'vue-router'
+
+const router = useRouter()
 
 const page = ref(1)
 const pageSize = ref(10)
@@ -26,7 +29,7 @@ const formatDate = (iso: string) =>
   new Intl.DateTimeFormat('en-US', { dateStyle: 'medium' }).format(new Date(iso))
 
 const onView = (row: ServiceType) => {
-  console.log('view', row)
+  router.push(VIEW_SERVICE_TYPES(row.id))
 }
 
 const onDelete = (row: ServiceType) => {

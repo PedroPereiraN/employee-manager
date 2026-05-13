@@ -7,7 +7,10 @@ import Button from '@/components/ui/Button.vue'
 import { getEmployees } from '@/services/queries'
 import type { Employee } from '@/utils/api-types'
 import { EmployeeStatus } from '@/utils/enums'
-import { CREATE_EMPLOYEES } from '@/utils/paths'
+import { CREATE_EMPLOYEES, VIEW_EMPLOYEES } from '@/utils/paths'
+import { useRouter } from 'vue-router'
+
+const router = useRouter()
 
 const page = ref(1)
 const pageSize = ref(10)
@@ -40,7 +43,7 @@ const formatType = (type: string) =>
   type.replace(/_/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase())
 
 const onView = (row: Employee) => {
-  console.log('view', row)
+  router.push(VIEW_EMPLOYEES(row.id))
 }
 
 const onDelete = (row: Employee) => {

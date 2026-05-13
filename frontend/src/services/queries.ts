@@ -90,6 +90,79 @@ export const getServiceTypes = async ({
   return res.data
 }
 
+export const getServiceType = async (id: string): Promise<ServiceType> => {
+  const res = await appClient.get<ServiceType>(`/service_types/${id}`)
+  return res.data
+}
+
+export const createServiceType = async ({
+  name,
+  description,
+}: {
+  name: string
+  description?: string | null
+}) => {
+  const res = await appClient.post('/service_types', { name, description })
+  return res.data
+}
+
+export const editServiceType = async ({
+  id,
+  name,
+  description,
+}: {
+  id: string
+  name?: string | null
+  description?: string | null
+}) => {
+  const res = await appClient.put('/service_types', { id, name, description })
+  return res.data
+}
+
+export const getEmployee = async (id: string): Promise<Employee> => {
+  const res = await appClient.get<Employee>(`/employee/${id}`)
+  return res.data
+}
+
+export const createEmployee = async (data: {
+  name: string
+  birthday?: string | null
+  phone?: string | null
+  email?: string | null
+  admission_date?: string | null
+  status: string
+  type: string
+  payment_method: string
+  payment_value: number
+  hourly_rate?: number | null
+  hourly_bonus?: number | null
+  observations?: string | null
+  position_id: string
+}) => {
+  const res = await appClient.post('/employee', data)
+  return res.data
+}
+
+export const editEmployee = async (data: {
+  id: string
+  name?: string | null
+  birthday?: string | null
+  phone?: string | null
+  email?: string | null
+  admission_date?: string | null
+  status?: string | null
+  type?: string | null
+  payment_method?: string | null
+  payment_value?: number | null
+  hourly_rate?: number | null
+  hourly_bonus?: number | null
+  observations?: string | null
+  position_id?: string | null
+}) => {
+  const res = await appClient.put('/employee', data)
+  return res.data
+}
+
 export const getServiceOrders = async ({
   page,
   size,

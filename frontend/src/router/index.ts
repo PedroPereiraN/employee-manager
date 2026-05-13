@@ -4,7 +4,9 @@ import DashboardView from '@/views/dashboard/DashboardView.vue'
 import PositionsView from '@/views/positions/PositionsView.vue'
 import PositionsForm from '@/views/positions/Form.vue'
 import EmployeesView from '@/views/employees/EmployeesView.vue'
+import EmployeesForm from '@/views/employees/Form.vue'
 import ServiceTypesView from '@/views/service-types/ServiceTypesView.vue'
+import ServiceTypesForm from '@/views/service-types/Form.vue'
 import ServiceOrdersView from '@/views/service-orders/ServiceOrdersView.vue'
 
 const router = createRouter({
@@ -42,9 +44,31 @@ const router = createRouter({
       component: EmployeesView,
     },
     {
+      path: '/employees/new',
+      name: 'employees-new',
+      component: EmployeesForm,
+    },
+    {
+      path: '/employees/:id',
+      name: 'employees-visualize',
+      component: EmployeesForm,
+      props: true,
+    },
+    {
       path: '/service-types',
       name: 'service-types',
       component: ServiceTypesView,
+    },
+    {
+      path: '/service-types/new',
+      name: 'service-types-new',
+      component: ServiceTypesForm,
+    },
+    {
+      path: '/service-types/:id',
+      name: 'service-types-visualize',
+      component: ServiceTypesForm,
+      props: true,
     },
     {
       path: '/service-orders',
