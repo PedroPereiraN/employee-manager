@@ -31,6 +31,12 @@ const router = createRouter({
       component: PositionsForm,
     },
     {
+      path: '/positions/:id',
+      name: 'positions-visualize',
+      component: PositionsForm,
+      props: true,
+    },
+    {
       path: '/employees',
       name: 'employees',
       component: EmployeesView,

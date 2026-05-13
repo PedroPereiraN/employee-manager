@@ -6,6 +6,9 @@ import RowActionsPopover, { type RowAction } from '@/components/ui/RowActionsPop
 import Button from '@/components/ui/Button.vue'
 import { getPositions } from '@/services/queries'
 import type { Position } from '@/utils/api-types'
+import { useRouter } from 'vue-router'
+
+const router = useRouter()
 
 const page = ref(1)
 const pageSize = ref(10)
@@ -25,7 +28,7 @@ const formatDate = (iso: string) =>
   new Intl.DateTimeFormat('en-US', { dateStyle: 'medium' }).format(new Date(iso))
 
 const onView = (row: Position) => {
-  console.log('view', row)
+  router.push(`/positions/${row.id}`)
 }
 
 const onDelete = (row: Position) => {

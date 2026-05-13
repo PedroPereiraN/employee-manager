@@ -1,5 +1,11 @@
 import { appClient, formClient } from '@/lib/axios'
-import type { Employee, PaginatedResponse, PaginatedServiceOrder, Position, ServiceType } from '@/utils/api-types'
+import type {
+  Employee,
+  PaginatedResponse,
+  PaginatedServiceOrder,
+  Position,
+  ServiceType,
+} from '@/utils/api-types'
 
 export const auth = async ({ email, password }: { email: string; password: string }) =>
   formClient.post('/auth/login', {
@@ -17,6 +23,44 @@ export const getPositions = async ({
   const res = await appClient.get<PaginatedResponse<Position>>('/positions', {
     params: { page, size },
   })
+  return res.data
+}
+
+export const getPosition = async (id: string): Promise<Position> => {
+  const res = await appClient.get<Position>(`/positions/${id}`)
+  return res.data
+}
+
+export const createPosition = async ({
+  name,
+  description,
+}: {
+  name: string
+  description?: string | null
+}) => {
+  const res = await appClient.post('/positions', {
+    name,
+    description,
+  })
+
+  return res.data
+}
+
+export const editPosition = async ({
+  id,
+  name,
+  description,
+}: {
+  id: string
+  name?: string | null
+  description?: string | null
+}) => {
+  const res = await appClient.put('/positions', {
+    id,
+    name,
+    description,
+  })
+
   return res.data
 }
 

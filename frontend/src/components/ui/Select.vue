@@ -20,15 +20,16 @@ export type SelectOption = {
 defineProps<{
   options: SelectOption[]
   placeholder?: string
+  disabled?: boolean
 }>()
 
 const model = defineModel<string>()
 </script>
 
 <template>
-  <SelectRoot v-model="model">
+  <SelectRoot v-model="model" :disabled="disabled">
     <SelectTrigger
-      class="flex items-center gap-2 px-3 py-1.5 rounded-lg border border-gray-200 bg-white text-sm text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-colors cursor-pointer"
+      class="flex items-center gap-2 px-3 py-1.5 rounded-lg border border-gray-200 bg-white text-sm text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-colors cursor-pointer disabled:bg-gray-50 disabled:text-gray-400 disabled:border-gray-300 disabled:cursor-not-allowed disabled:select-none"
     >
       <SelectValue :placeholder="placeholder ?? 'Select…'" />
       <Icon icon="lucide:chevron-down" width="14" height="14" class="text-gray-400 shrink-0" />
