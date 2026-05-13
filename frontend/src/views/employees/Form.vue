@@ -15,6 +15,7 @@ import { computed, ref, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import { EMPLOYEES } from '@/utils/paths'
 import { EmployeeStatus, EmployeeType, PaymentMethod } from '@/utils/enums'
+import { numberMask } from '@/utils/masks'
 
 export type Props = {
   id?: string
@@ -63,26 +64,28 @@ if (id) {
   formState.value = 'visualize'
 }
 
-const nullableNumber = z.preprocess(
-  (v) => (v === '' || v === undefined || v === null ? null : Number(v)),
-  z.number().nullable(),
-)
-
 const schema = z.object({
   name: z.string().min(1, 'Name is required'),
   birthday: z.string().nullish(),
   phone: z.string().nullish(),
   email: z.string().nullish(),
   admission_date: z.string().nullish(),
-  status: z.nativeEnum(EmployeeStatus, { message: 'Status is required' }),
+  status: z.nativeEnum(EmployeeStatus).optional(),
   type: z.nativeEnum(EmployeeType, { message: 'Type is required' }),
   payment_method: z.nativeEnum(PaymentMethod, { message: 'Payment method is required' }),
-  payment_value: z.coerce.number({ invalid_type_error: 'Must be a number' }).min(0),
-  hourly_rate: nullableNumber,
-  hourly_bonus: nullableNumber,
+  payment_value: z.string().min(1, 'Payment value is required'),
+  hourly_rate: z.string().nullish(),
+  hourly_bonus: z.string().nullish(),
   observations: z.string().nullish(),
   position_id: z.string().min(1, 'Position is required'),
 })
+
+const parseMasked = (v: string | null | undefined): number | null => {
+  if (!v) return null
+  const digits = v.replace(/\D/g, '')
+  if (!digits) return null
+  return parseFloat(digits) / 100
+}
 
 const { handleSubmit, errors, defineField, setValues } = useForm({
   validationSchema: toTypedSchema(schema),
@@ -99,9 +102,9 @@ watch(employee, (emp) => {
       status: emp.status,
       type: emp.type,
       payment_method: emp.payment_method,
-      payment_value: emp.payment_value,
-      hourly_rate: emp.hourly_rate ?? undefined,
-      hourly_bonus: emp.hourly_bonus ?? undefined,
+      payment_value: numberMask(emp.payment_value, 2),
+      hourly_rate: emp.hourly_rate != null ? numberMask(emp.hourly_rate, 2) : undefined,
+      hourly_bonus: emp.hourly_bonus != null ? numberMask(emp.hourly_bonus, 2) : undefined,
       observations: emp.observations ?? undefined,
       position_id: emp.position.id,
     })
@@ -109,8 +112,16 @@ watch(employee, (emp) => {
 })
 
 const onSubmit = handleSubmit(async (values) => {
+  const payload = {
+    ...values,
+    status: formState.value === 'new' ? EmployeeStatus.Active : values.status!,
+    payment_value: parseMasked(values.payment_value) ?? 0,
+    hourly_rate: parseMasked(values.hourly_rate),
+    hourly_bonus: parseMasked(values.hourly_bonus),
+  }
+
   if (formState.value == 'new') {
-    createEmployee(values)
+    createEmployee(payload)
       .then(() => {
         router.push(EMPLOYEES)
       })
@@ -118,7 +129,7 @@ const onSubmit = handleSubmit(async (values) => {
         console.error(error)
       })
   } else if (formState.value == 'edit' && id) {
-    editEmployee({ ...values, id })
+    editEmployee({ ...payload, id })
       .then(() => {
         router.push(EMPLOYEES)
       })
@@ -207,7 +218,7 @@ const [positionId] = defineField('position_id')
           <p class="text-sm text-gray-500 mt-1">Status, type and position in the organization.</p>
         </div>
         <div class="grid grid-cols-3 gap-4">
-          <Fieldset id="status" label="Status" :error="errors.status">
+          <Fieldset v-if="formState !== 'new'" id="status" label="Status" :error="errors.status">
             <Select
               v-model="status as string"
               :options="statusOptions"
@@ -251,9 +262,10 @@ const [positionId] = defineField('position_id')
           <Fieldset id="payment_value" label="Payment Value" :error="errors.payment_value">
             <Input
               id="payment_value"
-              type="number"
               placeholder="0.00"
-              v-model="paymentValue"
+              class="text-right"
+              :model-value="paymentValue ?? ''"
+              @update:model-value="paymentValue = numberMask($event as string, 2)"
               v-bind="paymentValueAttrs"
               :disabled="formState == 'visualize'"
             />
@@ -261,9 +273,10 @@ const [positionId] = defineField('position_id')
           <Fieldset id="hourly_rate" label="Hourly Rate" :error="errors.hourly_rate">
             <Input
               id="hourly_rate"
-              type="number"
               placeholder="0.00"
-              v-model="hourlyRate"
+              class="text-right"
+              :model-value="hourlyRate ?? ''"
+              @update:model-value="hourlyRate = numberMask($event as string, 2)"
               v-bind="hourlyRateAttrs"
               :disabled="formState == 'visualize'"
             />
@@ -271,9 +284,10 @@ const [positionId] = defineField('position_id')
           <Fieldset id="hourly_bonus" label="Hourly Bonus" :error="errors.hourly_bonus">
             <Input
               id="hourly_bonus"
-              type="number"
               placeholder="0.00"
-              v-model="hourlyBonus"
+              class="text-right"
+              :model-value="hourlyBonus ?? ''"
+              @update:model-value="hourlyBonus = numberMask($event as string, 2)"
               v-bind="hourlyBonusAttrs"
               :disabled="formState == 'visualize'"
             />
