@@ -7,6 +7,7 @@ import Button from '@/components/ui/Button.vue'
 import { getPositions } from '@/services/queries'
 import type { Position } from '@/utils/api-types'
 import { useRouter } from 'vue-router'
+import { CREATE_POSITIONS, VIEW_POSITIONS } from '@/utils/paths'
 
 const router = useRouter()
 
@@ -28,7 +29,7 @@ const formatDate = (iso: string) =>
   new Intl.DateTimeFormat('en-US', { dateStyle: 'medium' }).format(new Date(iso))
 
 const onView = (row: Position) => {
-  router.push(`/positions/${row.id}`)
+  router.push(VIEW_POSITIONS(row.id))
 }
 
 const onDelete = (row: Position) => {
@@ -54,7 +55,7 @@ const onAction = (key: string, row: Position) => {
         <p class="text-sm text-gray-500 mt-1">Manage all job positions in your organization.</p>
       </div>
 
-      <Button to="positions/new" icon="lucide:plus">New position</Button>
+      <Button :to="CREATE_POSITIONS" icon="lucide:plus">New position</Button>
     </div>
 
     <div v-if="isLoading" class="flex items-center justify-center py-20 text-gray-400 text-sm">

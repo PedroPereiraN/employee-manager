@@ -1,15 +1,16 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 import { Icon } from '@iconify/vue'
+import { POSITIONS, SERVICE_TYPES, EMPLOYEES, SERVICE_ORDERS } from '@/utils/paths'
 
 const collapsed = ref(false)
 
 const paths: { to: string; label: string; icon: string }[] = [
   { to: '/dashboard', label: 'Dashboard', icon: 'lucide:layout-dashboard' },
-  { to: '/positions', label: 'Positions', icon: 'lucide:briefcase' },
-  { to: '/service-types', label: 'Service Types', icon: 'lucide:settings-2' },
-  { to: '/employees', label: 'Employees', icon: 'lucide:users' },
-  { to: '/service-orders', label: 'Service Orders', icon: 'lucide:clipboard-list' },
+  { to: POSITIONS, label: 'Positions', icon: 'lucide:briefcase' },
+  { to: SERVICE_TYPES, label: 'Service Types', icon: 'lucide:settings-2' },
+  { to: EMPLOYEES, label: 'Employees', icon: 'lucide:users' },
+  { to: SERVICE_ORDERS, label: 'Service Orders', icon: 'lucide:clipboard-list' },
 ]
 
 const logout = () => {

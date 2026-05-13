@@ -6,6 +6,7 @@ import RowActionsPopover, { type RowAction } from '@/components/ui/RowActionsPop
 import Button from '@/components/ui/Button.vue'
 import { getServiceTypes } from '@/services/queries'
 import type { ServiceType } from '@/utils/api-types'
+import { CREATE_SERVICE_TYPES } from '@/utils/paths'
 
 const page = ref(1)
 const pageSize = ref(10)
@@ -51,7 +52,7 @@ const onAction = (key: string, row: ServiceType) => {
         <p class="text-sm text-gray-500 mt-1">Manage all service types in your organization.</p>
       </div>
 
-      <Button to="service-types/new" icon="lucide:plus">New service type</Button>
+      <Button :to="CREATE_SERVICE_TYPES" icon="lucide:plus">New service type</Button>
     </div>
 
     <div v-if="isLoading" class="flex items-center justify-center py-20 text-gray-400 text-sm">

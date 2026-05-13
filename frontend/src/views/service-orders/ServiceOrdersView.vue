@@ -7,6 +7,7 @@ import Button from '@/components/ui/Button.vue'
 import { getServiceOrders } from '@/services/queries'
 import type { PaginatedServiceOrder } from '@/utils/api-types'
 import { ServiceOrderStatus } from '@/utils/enums'
+import { CREATE_SERVICE_ORDERS } from '@/utils/paths'
 
 const page = ref(1)
 const pageSize = ref(10)
@@ -81,7 +82,7 @@ const onAction = (key: string, row: PaginatedServiceOrder) => {
         <p class="text-sm text-gray-500 mt-1">Manage all service orders in your organization.</p>
       </div>
 
-      <Button to="service-orders/new" icon="lucide:plus">New service order</Button>
+      <Button :to="CREATE_SERVICE_ORDERS" icon="lucide:plus">New service order</Button>
     </div>
 
     <div v-if="isLoading" class="flex items-center justify-center py-20 text-gray-400 text-sm">

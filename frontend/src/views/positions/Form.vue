@@ -11,6 +11,7 @@ import { useQuery } from '@tanstack/vue-query'
 import { createPosition, editPosition, getPosition } from '@/services/queries'
 import { computed, ref, watch } from 'vue'
 import { useRouter } from 'vue-router'
+import { POSITIONS } from '@/utils/paths'
 
 export type Props = {
   id?: string
@@ -51,7 +52,7 @@ const onSubmit = handleSubmit(async (values) => {
   if (formState.value == 'new') {
     createPosition(values)
       .then(() => {
-        router.push('/position')
+        router.push(POSITIONS)
       })
       .catch((error) => {
         console.error(error)
@@ -59,7 +60,7 @@ const onSubmit = handleSubmit(async (values) => {
   } else if (formState.value == 'edit' && id) {
     editPosition({ ...values, id })
       .then(() => {
-        router.push('/position')
+        router.push(POSITIONS)
       })
       .catch((error) => {
         console.error(error)
@@ -108,7 +109,7 @@ const [description, descriptionAttrs] = defineField('description')
       </div>
       <Separator />
       <div class="px-6 py-4 flex justify-end gap-2">
-        <Button variant="outline" to="/positions">Cancel</Button>
+        <Button variant="outline" :to="POSITIONS">Cancel</Button>
         <Button
           type="button"
           icon="lucide:plus"

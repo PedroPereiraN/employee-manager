@@ -7,6 +7,7 @@ import Button from '@/components/ui/Button.vue'
 import { getEmployees } from '@/services/queries'
 import type { Employee } from '@/utils/api-types'
 import { EmployeeStatus } from '@/utils/enums'
+import { CREATE_EMPLOYEES } from '@/utils/paths'
 
 const page = ref(1)
 const pageSize = ref(10)
@@ -65,7 +66,7 @@ const onAction = (key: string, row: Employee) => {
         <p class="text-sm text-gray-500 mt-1">Manage all employees in your organization.</p>
       </div>
 
-      <Button to="employees/new" icon="lucide:plus">New employee</Button>
+      <Button :to="CREATE_EMPLOYEES" icon="lucide:plus">New employee</Button>
     </div>
 
 <div v-if="isLoading" class="flex items-center justify-center py-20 text-gray-400 text-sm">
