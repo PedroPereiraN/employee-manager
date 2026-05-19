@@ -4,6 +4,7 @@ import type {
   PaginatedResponse,
   PaginatedServiceOrder,
   Position,
+  ServiceOrder,
   ServiceType,
   User,
 } from '@/utils/api-types'
@@ -213,5 +214,54 @@ export const getServiceOrders = async ({
   const res = await appClient.get<PaginatedResponse<PaginatedServiceOrder>>('/service_orders', {
     params: { page, size },
   })
+  return res.data
+}
+
+export const getServiceOrder = async (id: string): Promise<ServiceOrder> => {
+  const res = await appClient.get<ServiceOrder>(`/service_orders/${id}`)
+  return res.data
+}
+
+export const reportServiceOrderProgress = async (data: {
+  service_order_id: string
+  status: string
+  status_reason?: string | null
+  work_sessions?: Array<{
+    employee_id: string
+    histories?: Array<{
+      status: string
+      observations?: string | null
+      occurred_at: string
+    }>
+  }>
+  new_histories?: Array<{
+    work_session_id: string
+    status: string
+    observations?: string | null
+    occurred_at: string
+  }>
+}) => {
+  const res = await appClient.post('/service_orders/report_progress', data)
+  return res.data
+}
+
+
+
+export const createServiceOrder = async (data: {
+  service_type_id?: string | null
+  description?: string | null
+  status: string
+  finished_at?: string | null
+  status_reason?: string | null
+  work_sessions?: Array<{
+    employee_id: string
+    histories?: Array<{
+      status: string
+      observations?: string | null
+      occurred_at: string
+    }>
+  }>
+}) => {
+  const res = await appClient.post('/service_orders', data)
   return res.data
 }

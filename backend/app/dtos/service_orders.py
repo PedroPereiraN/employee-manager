@@ -85,12 +85,10 @@ class CreateWorkSessionInputDto(BaseModel):
 class CreateServiceOrderInputDto(BaseModel):
     status: ServiceOrderStatus
     description: Optional[str] = None
-    started_at: Optional[datetime] = None
     finished_at: Optional[datetime] = None
-    total_hours: Optional[float] = None
     service_type_id: Optional[UUID] = None
     work_sessions: Optional[List[CreateWorkSessionInputDto]] = None
-    status_history: Optional[CreateServiceOrderStatusHistoryInputDto] = None
+    status_reason: Optional[str] = None
 
 
 class CreateServiceOrderStatusHistoryOutputDto(BaseModel):
@@ -171,6 +169,6 @@ class ReportWorkSessionProgressInputDto(BaseModel):
 class ReportServiceOrderProgressInputDto(BaseModel):
     service_order_id: UUID
     status: ServiceOrderStatus
-    new_work_sessions: Optional[List[ReportWorkSessionProgressInputDto]] = None
+    work_sessions: Optional[List[ReportWorkSessionProgressInputDto]] = None
     new_histories: Optional[List[ReportNewWorkSessionHistoryProgressInputDto]] = None
-    status_history: Optional[ReportServiceOrderStatusHistoryProgressInputDto] = None
+    status_reason: Optional[str] = None

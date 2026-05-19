@@ -7,7 +7,10 @@ import Button from '@/components/ui/Button.vue'
 import { getServiceOrders } from '@/services/queries'
 import type { PaginatedServiceOrder } from '@/utils/api-types'
 import { ServiceOrderStatus } from '@/utils/enums'
-import { CREATE_SERVICE_ORDERS } from '@/utils/paths'
+import { CREATE_SERVICE_ORDERS, REPORT_SERVICE_ORDER_PROGRESS, TIMELINE_SERVICE_ORDER, VIEW_SERVICE_ORDERS } from '@/utils/paths'
+import { useRouter } from 'vue-router'
+
+const router = useRouter()
 
 const page = ref(1)
 const pageSize = ref(10)
@@ -56,7 +59,7 @@ const formatDate = (iso: string) =>
   new Intl.DateTimeFormat('en-US', { dateStyle: 'medium' }).format(new Date(iso))
 
 const onView = (row: PaginatedServiceOrder) => {
-  console.log('view', row)
+  router.push(VIEW_SERVICE_ORDERS(row.id))
 }
 
 const onDelete = (row: PaginatedServiceOrder) => {
@@ -65,11 +68,15 @@ const onDelete = (row: PaginatedServiceOrder) => {
 
 const rowActions: RowAction[] = [
   { key: 'view', label: 'View', icon: 'lucide:eye' },
+  { key: 'report', label: 'Report Progress', icon: 'lucide:send' },
+  { key: 'timeline', label: 'Timeline', icon: 'lucide:git-branch' },
   { key: 'delete', label: 'Delete', icon: 'lucide:trash-2', variant: 'danger' },
 ]
 
 const onAction = (key: string, row: PaginatedServiceOrder) => {
   if (key === 'view') onView(row)
+  else if (key === 'report') router.push(REPORT_SERVICE_ORDER_PROGRESS(row.id))
+  else if (key === 'timeline') router.push(TIMELINE_SERVICE_ORDER(row.id))
   else if (key === 'delete') onDelete(row)
 }
 </script>

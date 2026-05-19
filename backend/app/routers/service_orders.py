@@ -103,7 +103,7 @@ async def delete_service_order(
 
 
 @service_order_router.post(
-    "/report-service-order-progress", status_code=204, response_model=None
+    "/report_progress", status_code=204, response_model=None
 )
 async def report_service_order_progress(
     body: ReportServiceOrderProgressInputDto,

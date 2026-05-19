@@ -17,3 +17,5 @@ export const VIEW_EMPLOYEES = (id: string) => `/employees/${id}`
 export const SERVICE_ORDERS = '/service-orders'
 export const CREATE_SERVICE_ORDERS = '/service-orders/new'
 export const VIEW_SERVICE_ORDERS = (id: string) => `/service-orders/${id}`
+export const REPORT_SERVICE_ORDER_PROGRESS = (id: string) => `/service-orders/${id}/report-progress`
+export const TIMELINE_SERVICE_ORDER = (id: string) => `/service-orders/${id}/timeline`

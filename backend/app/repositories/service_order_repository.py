@@ -145,45 +145,38 @@ class ServiceOrderRepository:
     def report_progress(
         self,
         service_order_id: UUID,
+        new_status: ServiceOrderStatus,
+        status_history: ServiceOrderStatusHistoryProps,
         new_work_sessions: List[WorkSessionProps],
         new_histories: List[WorkSessionHistoryProps],
+        started_at: Optional[datetime] = None,
+        finished_at: Optional[datetime] = None,
+        total_hours: Optional[float] = None,
     ) -> None:
         try:
             now = datetime.now()
 
-            exists = (
-                self.db.query(ServiceOrderModel.id)
-                .filter(
-                    ServiceOrderModel.id == service_order_id,
-                    ServiceOrderModel.deleted_at.is_(None),
-                )
-                .scalar()
-            )
-            if not exists:
-                raise HTTPException(
-                    status_code=status.HTTP_404_NOT_FOUND,
-                    detail="Service order not found",
-                )
-
-            if new_histories:
-                ws_ids = list({h.work_session_id for h in new_histories})
-                count = (
-                    self.db.query(func.count(WorkSessionModel.id))
-                    .filter(WorkSessionModel.id.in_(ws_ids))
-                    .scalar()
-                )
-                if count != len(ws_ids):
-                    raise HTTPException(
-                        status_code=status.HTTP_404_NOT_FOUND,
-                        detail="One or more work sessions not found",
-                    )
-                self.db.query(WorkSessionModel).filter(
-                    WorkSessionModel.id.in_(ws_ids)
-                ).update({"updated_at": now}, synchronize_session=False)
+            update_fields: dict = {"status": new_status, "updated_at": now}
+            if started_at is not None:
+                update_fields["started_at"] = started_at
+            if finished_at is not None:
+                update_fields["finished_at"] = finished_at
+            if total_hours is not None:
+                update_fields["total_hours"] = total_hours
 
             self.db.query(ServiceOrderModel).filter(
                 ServiceOrderModel.id == service_order_id
-            ).update({"updated_at": now}, synchronize_session=False)
+            ).update(update_fields, synchronize_session=False)
+
+            self.db.add(
+                ServiceOrderStatusHistoryModel(
+                    id=status_history.id,
+                    service_order_id=status_history.service_order_id,
+                    reason=status_history.reason,
+                    status=status_history.status,
+                    created_at=status_history.created_at,
+                )
+            )
 
             if new_work_sessions:
                 self.db.add_all(
@@ -214,6 +207,10 @@ class ServiceOrderRepository:
                 )
 
             if new_histories:
+                ws_ids = list({h.work_session_id for h in new_histories})
+                self.db.query(WorkSessionModel).filter(
+                    WorkSessionModel.id.in_(ws_ids)
+                ).update({"updated_at": now}, synchronize_session=False)
                 self.db.add_all(
                     [
                         WorkSessionHistoryModel(

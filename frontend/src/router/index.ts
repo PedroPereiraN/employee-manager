@@ -8,6 +8,9 @@ import EmployeesForm from '@/views/employees/Form.vue'
 import ServiceTypesView from '@/views/service-types/ServiceTypesView.vue'
 import ServiceTypesForm from '@/views/service-types/Form.vue'
 import ServiceOrdersView from '@/views/service-orders/ServiceOrdersView.vue'
+import ServiceOrdersForm from '@/views/service-orders/Form.vue'
+import ServiceOrdersReportProgress from '@/views/service-orders/ReportProgress.vue'
+import ServiceOrdersTimeline from '@/views/service-orders/Timeline.vue'
 import UsersView from '@/views/users/UsersView.vue'
 import UsersForm from '@/views/users/Form.vue'
 
@@ -76,6 +79,29 @@ const router = createRouter({
       path: '/service-orders',
       name: 'service-orders',
       component: ServiceOrdersView,
+    },
+    {
+      path: '/service-orders/new',
+      name: 'service-orders-new',
+      component: ServiceOrdersForm,
+    },
+    {
+      path: '/service-orders/:id',
+      name: 'service-orders-visualize',
+      component: ServiceOrdersForm,
+      props: true,
+    },
+    {
+      path: '/service-orders/:id/report-progress',
+      name: 'service-orders-report-progress',
+      component: ServiceOrdersReportProgress,
+      props: true,
+    },
+    {
+      path: '/service-orders/:id/timeline',
+      name: 'service-orders-timeline',
+      component: ServiceOrdersTimeline,
+      props: true,
     },
     {
       path: '/users',

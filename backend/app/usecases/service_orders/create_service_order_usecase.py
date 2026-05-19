@@ -1,3 +1,4 @@
+from datetime import datetime
 from app.dtos.service_orders import (
     CreateServiceOrderInputDto,
     CreateServiceOrderOutputDto,
@@ -12,6 +13,7 @@ from app.entities.service_order import (
     CreateWorkSessionProps,
     ServiceOrder,
 )
+from app.enums.service_order_status import ServiceOrderStatus
 from app.protocols.usecase import UseCase
 from app.repositories.service_order_repository import ServiceOrderRepository
 
@@ -23,22 +25,32 @@ class CreateServiceOrderUsecase(
         self.service_order_repository = service_order_repository
 
     def execute(self, input: CreateServiceOrderInputDto) -> CreateServiceOrderOutputDto:
+        now = datetime.now()
         order_number = self.service_order_repository.generate_order_number()
+
+        started_at = None
+        finished_at = None
+        total_hours = None
+
+        if input.status == ServiceOrderStatus.in_progress:
+            started_at = now
+        elif input.status == ServiceOrderStatus.completed:
+            started_at = now
+            finished_at = input.finished_at or now
+            total_hours = (finished_at - started_at).total_seconds() / 3600
 
         service_order = ServiceOrder.create(
             props=CreateServiceOrderProps(
                 order_number=order_number,
                 status=input.status,
                 description=input.description,
-                started_at=input.started_at,
-                finished_at=input.finished_at,
-                total_hours=input.total_hours,
+                started_at=started_at,
+                finished_at=finished_at,
+                total_hours=total_hours,
                 service_type_id=input.service_type_id,
                 status_history=CreateServiceOrderStatusHistoryProps(
                     status=input.status,
-                    reason=(
-                        input.status_history.reason if input.status_history else None
-                    ),
+                    reason=input.status_reason,
                 ),
                 work_sessions=(
                     [
