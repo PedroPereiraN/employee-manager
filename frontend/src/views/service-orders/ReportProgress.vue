@@ -7,6 +7,7 @@ import Input from '@/components/ui/Input.vue'
 import Textarea from '@/components/ui/Textarea.vue'
 import Separator from '@/components/ui/Separator.vue'
 import Button from '@/components/ui/Button.vue'
+import SuccessModal from '@/components/ui/SuccessModal.vue'
 import Select from '@/components/ui/Select.vue'
 import type { SelectOption } from '@/components/ui/Select.vue'
 import { Icon } from '@iconify/vue'
@@ -14,7 +15,7 @@ import { useQuery } from '@tanstack/vue-query'
 import { getEmployees, getServiceOrder, reportServiceOrderProgress } from '@/services/queries'
 import { computed, ref, watch } from 'vue'
 import { useRouter } from 'vue-router'
-import { VIEW_SERVICE_ORDERS } from '@/utils/paths'
+import { SERVICE_ORDERS, VIEW_SERVICE_ORDERS } from '@/utils/paths'
 import { ServiceOrderStatus, WorkSessionStatus } from '@/utils/enums'
 
 export type Props = {
@@ -73,13 +74,31 @@ const workSessionStatusConfig: Record<WorkSessionStatus, { label: string; dot: s
   [WorkSessionStatus.Stopped]: { label: 'Stopped', dot: 'bg-red-500', text: 'text-red-600' },
 }
 
-const statusLabels: Record<ServiceOrderStatus, string> = {
-  [ServiceOrderStatus.NotStarted]: 'Not Started',
-  [ServiceOrderStatus.Pending]: 'Pending',
-  [ServiceOrderStatus.InProgress]: 'In Progress',
-  [ServiceOrderStatus.Suspended]: 'Suspended',
-  [ServiceOrderStatus.Completed]: 'Completed',
-  [ServiceOrderStatus.Cancelled]: 'Cancelled',
+const statusReasonConfig: Record<ServiceOrderStatus, { title: string; description: string }> = {
+  [ServiceOrderStatus.NotStarted]: {
+    title: 'Observations about the order',
+    description: 'Add any initial observations about this order.',
+  },
+  [ServiceOrderStatus.Pending]: {
+    title: 'Observations about what is pending',
+    description: 'Describe what is pending or blocking the order.',
+  },
+  [ServiceOrderStatus.InProgress]: {
+    title: 'Observations about the order progress',
+    description: 'Describe the current progress of the order.',
+  },
+  [ServiceOrderStatus.Suspended]: {
+    title: 'Reason for suspending the order',
+    description: 'Explain why the order has been suspended.',
+  },
+  [ServiceOrderStatus.Completed]: {
+    title: 'Observations about the order completion',
+    description: 'Add any final observations about the completed order.',
+  },
+  [ServiceOrderStatus.Cancelled]: {
+    title: 'Reason for cancelling the order',
+    description: 'Explain why the order has been cancelled.',
+  },
 }
 
 const formatDate = (iso: string) =>
@@ -149,9 +168,11 @@ const schema = z.object({
   status_reason: z.string().nullish(),
 })
 
-const { handleSubmit, errors, defineField, setValues } = useForm({
+const { handleSubmit, errors, defineField, setValues, resetForm } = useForm({
   validationSchema: toTypedSchema(schema),
 })
+
+const showSuccessModal = ref(false)
 
 watch(serviceOrder, (so) => {
   if (!so) return
@@ -164,10 +185,14 @@ watch(serviceOrder, (so) => {
 const [status] = defineField('status')
 const [statusReason, statusReasonAttrs] = defineField('status_reason')
 
-const statusReasonTitle = computed(() => {
-  const label = status.value ? statusLabels[status.value as ServiceOrderStatus] : null
-  return label ? `Justify why the order is ${label}` : 'Status Reason'
-})
+const statusReasonTitle = computed(
+  () => statusReasonConfig[status.value as ServiceOrderStatus]?.title ?? 'Status Reason',
+)
+const statusReasonDescription = computed(
+  () =>
+    statusReasonConfig[status.value as ServiceOrderStatus]?.description ??
+    'Explain the reason for the selected status.',
+)
 
 const onSubmit = handleSubmit(async (values) => {
   const sessions = newSessions.value
@@ -202,12 +227,33 @@ const onSubmit = handleSubmit(async (values) => {
     work_sessions: sessions,
     new_histories: newHistories.length > 0 ? newHistories : undefined,
   })
-    .then(() => router.push(VIEW_SERVICE_ORDERS(id)))
+    .then(() => {
+      showSuccessModal.value = true
+    })
     .catch(console.error)
 })
+
+function handleReportAgain() {
+  showSuccessModal.value = false
+  newSessions.value = []
+  Object.keys(existingSessionNewHistories.value).forEach((k) => {
+    existingSessionNewHistories.value[k] = []
+  })
+  resetForm()
+}
 </script>
 
 <template>
+  <SuccessModal
+    :open="showSuccessModal"
+    title="Progress reported successfully!"
+    description="The service order has been updated with the new progress."
+    :listPath="SERVICE_ORDERS"
+    secondaryLabel="Report again"
+    @secondary="handleReportAgain"
+    @close="showSuccessModal = false"
+  />
+
   <div class="p-8">
     <div>
       <h1 class="text-2xl font-bold text-gray-900">
@@ -280,7 +326,7 @@ const onSubmit = handleSubmit(async (values) => {
         <!-- Status Reason -->
         <div>
           <h2 class="text-xl font-bold text-gray-900">{{ statusReasonTitle }}</h2>
-          <p class="text-sm text-gray-500 mt-1">Explain the reason for the selected status.</p>
+          <p class="text-sm text-gray-500 mt-1">{{ statusReasonDescription }}</p>
         </div>
         <Textarea
           v-model="statusReason"
@@ -292,14 +338,9 @@ const onSubmit = handleSubmit(async (values) => {
 
         <!-- Work Sessions: existing (readonly) + new (editable) in one box -->
         <div class="rounded-xl border border-blue-100 bg-blue-50/50 p-5 flex flex-col gap-5">
-          <div class="flex items-center justify-between">
-            <div>
-              <h2 class="text-lg font-bold text-blue-900">Work Sessions</h2>
-              <p class="text-sm text-blue-600/70 mt-0.5">Employees and their session histories.</p>
-            </div>
-            <Button type="button" variant="outline" icon="lucide:plus" @click="addSession">
-              Add session
-            </Button>
+          <div>
+            <h2 class="text-lg font-bold text-gray-900">Work Sessions</h2>
+            <p class="text-sm text-gray-500 mt-0.5">Employees and their session histories.</p>
           </div>
 
           <!-- Existing sessions -->
@@ -311,18 +352,13 @@ const onSubmit = handleSubmit(async (values) => {
                 class="bg-white border border-blue-100 rounded-lg p-4 shadow-sm flex flex-col gap-3"
               >
                 <div class="flex items-center justify-between">
-                  <span class="text-sm font-semibold text-gray-800">{{ session.employee.name }}</span>
-                  <div class="flex items-center gap-3">
-                    <span class="text-xs text-gray-400">{{ formatDate(session.created_at) }}</span>
-                    <button
-                      type="button"
-                      class="text-blue-500 hover:text-blue-700 transition-colors"
-                      title="Add history"
-                      @click="addExistingHistory(session.id)"
-                    >
-                      <Icon icon="lucide:circle-plus" class="size-4" />
-                    </button>
+                  <div>
+                    <span class="text-sm font-semibold text-gray-800">{{ session.employee.name }}</span>
+                    <span v-if="session.total_hours != null" class="ml-2 text-xs text-blue-600 font-medium">
+                      {{ (Math.floor(session.total_hours * 100) / 100).toFixed(2) }}h current total hours
+                    </span>
                   </div>
+                  <span class="text-xs text-gray-400">Registered at {{ formatDate(session.created_at) }}</span>
                 </div>
 
                 <!-- Existing histories (readonly) -->
@@ -389,17 +425,25 @@ const onSubmit = handleSubmit(async (values) => {
                     </Fieldset>
                   </div>
                 </div>
+
+                <!-- Add history button -->
+                <button
+                  type="button"
+                  class="cursor-pointer flex items-center gap-1.5 text-xs text-blue-500 hover:text-blue-700 transition-colors self-start"
+                  @click="addExistingHistory(session.id)"
+                >
+                  <Icon icon="lucide:circle-plus" class="size-3.5" />
+                  Add history
+                </button>
               </div>
             </div>
-
-            <Separator v-if="newSessions.length > 0" />
           </template>
 
           <!-- New sessions (editable) -->
           <div v-if="newSessions.length === 0 && serviceOrder.work_sessions.length === 0" class="text-sm text-blue-400 text-center py-6">
             No sessions added yet. Click "Add session" to get started.
           </div>
-          <div v-else-if="newSessions.length > 0" class="flex flex-col gap-4">
+          <div v-if="newSessions.length > 0" class="flex flex-col gap-4">
             <div
               v-for="(session, si) in newSessions"
               :key="si"
@@ -409,7 +453,7 @@ const onSubmit = handleSubmit(async (values) => {
                 <span class="text-sm font-semibold text-gray-800">New Session {{ si + 1 }}</span>
                 <button
                   type="button"
-                  class="text-red-400 hover:text-red-600 transition-colors"
+                  class="cursor-pointer text-red-400 hover:text-red-600 transition-colors"
                   title="Remove session"
                   @click="removeSession(si)"
                 >
@@ -428,17 +472,7 @@ const onSubmit = handleSubmit(async (values) => {
               </div>
 
               <div class="flex flex-col gap-3">
-                <div class="flex items-center justify-between">
-                  <span class="text-xs font-semibold text-gray-500 uppercase tracking-wide">Histories</span>
-                  <button
-                    type="button"
-                    class="text-blue-500 hover:text-blue-700 transition-colors"
-                    title="Add history"
-                    @click="addHistory(si)"
-                  >
-                    <Icon icon="lucide:circle-plus" class="size-4" />
-                  </button>
-                </div>
+                <span class="text-xs font-semibold text-gray-500 uppercase tracking-wide">Histories</span>
 
                 <div v-if="session.histories.length === 0" class="text-xs text-gray-400 py-2 text-center">
                   No histories added.
@@ -482,9 +516,29 @@ const onSubmit = handleSubmit(async (values) => {
                     </Fieldset>
                   </div>
                 </div>
+
+                <!-- Add history button -->
+                <button
+                  type="button"
+                  class="cursor-pointer flex items-center gap-1.5 text-xs text-blue-500 hover:text-blue-700 transition-colors self-start"
+                  @click="addHistory(si)"
+                >
+                  <Icon icon="lucide:circle-plus" class="size-3.5" />
+                  Add history
+                </button>
               </div>
             </div>
           </div>
+
+          <!-- Add session button -->
+          <button
+            type="button"
+            class="cursor-pointer flex items-center gap-1.5 text-sm text-blue-500 hover:text-blue-700 transition-colors self-start font-medium"
+            @click="addSession"
+          >
+            <Icon icon="lucide:plus" class="size-4" />
+            Add session
+          </button>
         </div>
 
         <Separator />

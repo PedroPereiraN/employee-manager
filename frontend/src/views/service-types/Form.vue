@@ -7,11 +7,12 @@ import Input from '@/components/ui/Input.vue'
 import Textarea from '@/components/ui/Textarea.vue'
 import Separator from '@/components/ui/Separator.vue'
 import Button from '@/components/ui/Button.vue'
+import SuccessModal from '@/components/ui/SuccessModal.vue'
 import { useQuery } from '@tanstack/vue-query'
 import { createServiceType, editServiceType, getServiceType } from '@/services/queries'
 import { computed, ref, watch } from 'vue'
 import { useRouter } from 'vue-router'
-import { SERVICE_TYPES } from '@/utils/paths'
+import { SERVICE_TYPES, VIEW_SERVICE_TYPES } from '@/utils/paths'
 
 export type Props = {
   id?: string
@@ -38,9 +39,12 @@ const schema = z.object({
   description: z.string().nullish(),
 })
 
-const { handleSubmit, errors, defineField, setValues } = useForm({
+const { handleSubmit, errors, defineField, setValues, resetForm } = useForm({
   validationSchema: toTypedSchema(schema),
 })
+
+const showSuccessModal = ref(false)
+const successIsEdit = ref(false)
 
 watch(serviceType, (st) => {
   if (st) {
@@ -52,7 +56,7 @@ const onSubmit = handleSubmit(async (values) => {
   if (formState.value == 'new') {
     createServiceType(values)
       .then(() => {
-        router.push(SERVICE_TYPES)
+        showSuccessModal.value = true
       })
       .catch((error) => {
         console.error(error)
@@ -60,7 +64,8 @@ const onSubmit = handleSubmit(async (values) => {
   } else if (formState.value == 'edit' && id) {
     editServiceType({ ...values, id })
       .then(() => {
-        router.push(SERVICE_TYPES)
+        successIsEdit.value = true
+        showSuccessModal.value = true
       })
       .catch((error) => {
         console.error(error)
@@ -68,11 +73,27 @@ const onSubmit = handleSubmit(async (values) => {
   }
 })
 
+function handleSecondary() {
+  showSuccessModal.value = false
+  resetForm()
+}
+
 const [name, nameAttrs] = defineField('name')
 const [description, descriptionAttrs] = defineField('description')
 </script>
 
 <template>
+  <SuccessModal
+    :open="showSuccessModal"
+    :title="successIsEdit ? 'Service type updated successfully!' : 'Service type created successfully!'"
+    :description="successIsEdit ? 'The service type details have been updated.' : 'The new service type has been added to your organization.'"
+    :listPath="SERVICE_TYPES"
+    :secondaryLabel="successIsEdit ? 'View record' : 'Create another service type'"
+    :secondaryTo="successIsEdit && id ? VIEW_SERVICE_TYPES(id) : undefined"
+    @secondary="handleSecondary"
+    @close="showSuccessModal = false"
+  />
+
   <div class="p-8">
     <div>
       <h1 class="text-2xl font-bold text-gray-900">Create service type</h1>

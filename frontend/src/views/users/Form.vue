@@ -6,13 +6,14 @@ import Fieldset from '@/components/ui/Fieldset.vue'
 import Input from '@/components/ui/Input.vue'
 import Separator from '@/components/ui/Separator.vue'
 import Button from '@/components/ui/Button.vue'
+import SuccessModal from '@/components/ui/SuccessModal.vue'
 import Select from '@/components/ui/Select.vue'
 import type { SelectOption } from '@/components/ui/Select.vue'
 import { useQuery } from '@tanstack/vue-query'
 import { createUser, editUser, getUser } from '@/services/queries'
 import { computed, ref, watch } from 'vue'
 import { useRouter } from 'vue-router'
-import { USERS } from '@/utils/paths'
+import { USERS, VIEW_USERS } from '@/utils/paths'
 import { UserRole } from '@/utils/enums'
 
 export type Props = {
@@ -48,9 +49,12 @@ const schema = z.object({
   password: z.string().optional(),
 })
 
-const { handleSubmit, errors, defineField, setValues } = useForm({
+const { handleSubmit, errors, defineField, setValues, resetForm } = useForm({
   validationSchema: toTypedSchema(schema),
 })
+
+const showSuccessModal = ref(false)
+const successIsEdit = ref(false)
 
 watch(user, (u) => {
   if (u) {
@@ -66,7 +70,7 @@ const onSubmit = handleSubmit(async (values) => {
   if (formState.value === 'new') {
     createUser(values)
       .then(() => {
-        router.push(USERS)
+        showSuccessModal.value = true
       })
       .catch((error) => {
         console.error(error)
@@ -74,13 +78,19 @@ const onSubmit = handleSubmit(async (values) => {
   } else if (formState.value === 'edit' && id) {
     editUser({ ...values, id })
       .then(() => {
-        router.push(USERS)
+        successIsEdit.value = true
+        showSuccessModal.value = true
       })
       .catch((error) => {
         console.error(error)
       })
   }
 })
+
+function handleSecondary() {
+  showSuccessModal.value = false
+  resetForm()
+}
 
 const [name, nameAttrs] = defineField('name')
 const [email, emailAttrs] = defineField('email')
@@ -89,6 +99,17 @@ const [password, passwordAttrs] = defineField('password')
 </script>
 
 <template>
+  <SuccessModal
+    :open="showSuccessModal"
+    :title="successIsEdit ? 'User updated successfully!' : 'User created successfully!'"
+    :description="successIsEdit ? 'The user details have been updated.' : 'The new user has been added to your organization.'"
+    :listPath="USERS"
+    :secondaryLabel="successIsEdit ? 'View record' : 'Create another user'"
+    :secondaryTo="successIsEdit && id ? VIEW_USERS(id) : undefined"
+    @secondary="handleSecondary"
+    @close="showSuccessModal = false"
+  />
+
   <div class="p-8">
     <div>
       <h1 class="text-2xl font-bold text-gray-900">

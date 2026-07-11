@@ -7,13 +7,14 @@ import Input from '@/components/ui/Input.vue'
 import Textarea from '@/components/ui/Textarea.vue'
 import Separator from '@/components/ui/Separator.vue'
 import Button from '@/components/ui/Button.vue'
+import SuccessModal from '@/components/ui/SuccessModal.vue'
 import Select from '@/components/ui/Select.vue'
 import type { SelectOption } from '@/components/ui/Select.vue'
 import { useQuery } from '@tanstack/vue-query'
 import { createEmployee, editEmployee, getEmployee, getPositions } from '@/services/queries'
 import { computed, ref, watch } from 'vue'
 import { useRouter } from 'vue-router'
-import { EMPLOYEES } from '@/utils/paths'
+import { EMPLOYEES, VIEW_EMPLOYEES } from '@/utils/paths'
 import { EmployeeStatus, EmployeeType, PaymentMethod } from '@/utils/enums'
 import { numberMask } from '@/utils/masks'
 
@@ -87,9 +88,12 @@ const parseMasked = (v: string | null | undefined): number | null => {
   return parseFloat(digits) / 100
 }
 
-const { handleSubmit, errors, defineField, setValues } = useForm({
+const { handleSubmit, errors, defineField, setValues, resetForm } = useForm({
   validationSchema: toTypedSchema(schema),
 })
+
+const showSuccessModal = ref(false)
+const successIsEdit = ref(false)
 
 watch(employee, (emp) => {
   if (emp) {
@@ -123,7 +127,7 @@ const onSubmit = handleSubmit(async (values) => {
   if (formState.value == 'new') {
     createEmployee(payload)
       .then(() => {
-        router.push(EMPLOYEES)
+        showSuccessModal.value = true
       })
       .catch((error) => {
         console.error(error)
@@ -131,13 +135,19 @@ const onSubmit = handleSubmit(async (values) => {
   } else if (formState.value == 'edit' && id) {
     editEmployee({ ...payload, id })
       .then(() => {
-        router.push(EMPLOYEES)
+        successIsEdit.value = true
+        showSuccessModal.value = true
       })
       .catch((error) => {
         console.error(error)
       })
   }
 })
+
+function handleSecondary() {
+  showSuccessModal.value = false
+  resetForm()
+}
 
 const [name, nameAttrs] = defineField('name')
 const [birthday, birthdayAttrs] = defineField('birthday')
@@ -155,6 +165,17 @@ const [positionId] = defineField('position_id')
 </script>
 
 <template>
+  <SuccessModal
+    :open="showSuccessModal"
+    :title="successIsEdit ? 'Employee updated successfully!' : 'Employee created successfully!'"
+    :description="successIsEdit ? 'The employee details have been updated.' : 'The new employee has been added to your organization.'"
+    :listPath="EMPLOYEES"
+    :secondaryLabel="successIsEdit ? 'View record' : 'Create another employee'"
+    :secondaryTo="successIsEdit && id ? VIEW_EMPLOYEES(id) : undefined"
+    @secondary="handleSecondary"
+    @close="showSuccessModal = false"
+  />
+
   <div class="p-8">
     <div>
       <h1 class="text-2xl font-bold text-gray-900">Create employee</h1>

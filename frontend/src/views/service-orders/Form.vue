@@ -7,14 +7,24 @@ import Input from '@/components/ui/Input.vue'
 import Textarea from '@/components/ui/Textarea.vue'
 import Separator from '@/components/ui/Separator.vue'
 import Button from '@/components/ui/Button.vue'
+import SuccessModal from '@/components/ui/SuccessModal.vue'
 import Select from '@/components/ui/Select.vue'
 import type { SelectOption } from '@/components/ui/Select.vue'
 import { Icon } from '@iconify/vue'
 import { useQuery } from '@tanstack/vue-query'
-import { createServiceOrder, getEmployees, getServiceOrder, getServiceTypes } from '@/services/queries'
+import {
+  createServiceOrder,
+  getEmployees,
+  getServiceOrder,
+  getServiceTypes,
+} from '@/services/queries'
 import { computed, ref, watch } from 'vue'
 import { useRouter } from 'vue-router'
-import { REPORT_SERVICE_ORDER_PROGRESS, SERVICE_ORDERS, TIMELINE_SERVICE_ORDER } from '@/utils/paths'
+import {
+  REPORT_SERVICE_ORDER_PROGRESS,
+  SERVICE_ORDERS,
+  TIMELINE_SERVICE_ORDER,
+} from '@/utils/paths'
 import { ServiceOrderStatus, WorkSessionStatus } from '@/utils/enums'
 
 export type Props = {
@@ -119,13 +129,15 @@ const schema = z.object({
   description: z.string().nullish(),
 })
 
-const { handleSubmit, errors, defineField, setValues } = useForm({
+const { handleSubmit, errors, defineField, setValues, resetForm } = useForm({
   validationSchema: toTypedSchema(schema),
   initialValues: {
     status: ServiceOrderStatus.NotStarted,
     finished_at: new Date().toISOString().slice(0, 16),
   },
 })
+
+const showSuccessModal = ref(false)
 
 watch(serviceOrder, (so) => {
   if (so) {
@@ -155,17 +167,23 @@ const onSubmit = handleSubmit(async (values) => {
     service_type_id: values.service_type_id || null,
     description: values.description || null,
     status: values.status,
-    finished_at: values.status === ServiceOrderStatus.Completed ? (values.finished_at || null) : null,
+    finished_at: values.status === ServiceOrderStatus.Completed ? values.finished_at || null : null,
     status_reason: values.status_reason || null,
     work_sessions: sessions,
   })
     .then(() => {
-      router.push(SERVICE_ORDERS)
+      showSuccessModal.value = true
     })
     .catch((error) => {
       console.error(error)
     })
 })
+
+function handleCreateAnother() {
+  showSuccessModal.value = false
+  workSessions.value = []
+  resetForm()
+}
 
 const [serviceTypeId] = defineField('service_type_id')
 const [status] = defineField('status')
@@ -176,44 +194,101 @@ const [description, descriptionAttrs] = defineField('description')
 // --- Display configs ---
 
 const statusConfig: Record<ServiceOrderStatus, { label: string; dot: string; text: string }> = {
-  [ServiceOrderStatus.NotStarted]: { label: 'Not Started', dot: 'bg-gray-400', text: 'text-gray-500' },
+  [ServiceOrderStatus.NotStarted]: {
+    label: 'Not Started',
+    dot: 'bg-gray-400',
+    text: 'text-gray-500',
+  },
   [ServiceOrderStatus.Pending]: { label: 'Pending', dot: 'bg-yellow-500', text: 'text-yellow-600' },
-  [ServiceOrderStatus.InProgress]: { label: 'In Progress', dot: 'bg-blue-500', text: 'text-blue-600' },
-  [ServiceOrderStatus.Suspended]: { label: 'Suspended', dot: 'bg-orange-500', text: 'text-orange-600' },
-  [ServiceOrderStatus.Completed]: { label: 'Completed', dot: 'bg-green-500', text: 'text-green-600' },
+  [ServiceOrderStatus.InProgress]: {
+    label: 'In Progress',
+    dot: 'bg-blue-500',
+    text: 'text-blue-600',
+  },
+  [ServiceOrderStatus.Suspended]: {
+    label: 'Suspended',
+    dot: 'bg-orange-500',
+    text: 'text-orange-600',
+  },
+  [ServiceOrderStatus.Completed]: {
+    label: 'Completed',
+    dot: 'bg-green-500',
+    text: 'text-green-600',
+  },
   [ServiceOrderStatus.Cancelled]: { label: 'Cancelled', dot: 'bg-red-500', text: 'text-red-600' },
 }
 
-const workSessionStatusConfig: Record<WorkSessionStatus, { label: string; dot: string; text: string }> = {
+const workSessionStatusConfig: Record<
+  WorkSessionStatus,
+  { label: string; dot: string; text: string }
+> = {
   [WorkSessionStatus.Started]: { label: 'Started', dot: 'bg-blue-500', text: 'text-blue-600' },
   [WorkSessionStatus.Paused]: { label: 'Paused', dot: 'bg-yellow-500', text: 'text-yellow-600' },
   [WorkSessionStatus.Resumed]: { label: 'Resumed', dot: 'bg-blue-400', text: 'text-blue-500' },
-  [WorkSessionStatus.Completed]: { label: 'Completed', dot: 'bg-green-500', text: 'text-green-600' },
+  [WorkSessionStatus.Completed]: {
+    label: 'Completed',
+    dot: 'bg-green-500',
+    text: 'text-green-600',
+  },
   [WorkSessionStatus.Stopped]: { label: 'Stopped', dot: 'bg-red-500', text: 'text-red-600' },
 }
 
-const statusLabels: Record<ServiceOrderStatus, string> = {
-  [ServiceOrderStatus.NotStarted]: 'Not Started',
-  [ServiceOrderStatus.Pending]: 'Pending',
-  [ServiceOrderStatus.InProgress]: 'In Progress',
-  [ServiceOrderStatus.Suspended]: 'Suspended',
-  [ServiceOrderStatus.Completed]: 'Completed',
-  [ServiceOrderStatus.Cancelled]: 'Cancelled',
+const statusReasonConfig: Record<ServiceOrderStatus, { title: string; description: string }> = {
+  [ServiceOrderStatus.NotStarted]: {
+    title: 'Observations about the order',
+    description: 'Add any initial observations about this order.',
+  },
+  [ServiceOrderStatus.Pending]: {
+    title: 'Observations about what is pending',
+    description: 'Describe what is pending or blocking the order.',
+  },
+  [ServiceOrderStatus.InProgress]: {
+    title: 'Observations about the order progress',
+    description: 'Describe the current progress of the order.',
+  },
+  [ServiceOrderStatus.Suspended]: {
+    title: 'Reason for suspending the order',
+    description: 'Explain why the order has been suspended.',
+  },
+  [ServiceOrderStatus.Completed]: {
+    title: 'Observations about the order completion',
+    description: 'Add any final observations about the completed order.',
+  },
+  [ServiceOrderStatus.Cancelled]: {
+    title: 'Reason for cancelling the order',
+    description: 'Explain why the order has been cancelled.',
+  },
 }
 
-const statusReasonTitle = computed(() => {
-  const label = status.value ? statusLabels[status.value as ServiceOrderStatus] : null
-  return label ? `Justify why the order is ${label}` : 'Status Reason'
-})
+const statusReasonTitle = computed(
+  () => statusReasonConfig[status.value as ServiceOrderStatus]?.title ?? 'Status Reason',
+)
+const statusReasonDescription = computed(
+  () =>
+    statusReasonConfig[status.value as ServiceOrderStatus]?.description ??
+    'Explain the reason for the selected status.',
+)
 
 const formatDate = (iso: string) =>
-  new Intl.DateTimeFormat('pt-BR', { dateStyle: 'medium', timeStyle: 'short' }).format(new Date(iso))
+  new Intl.DateTimeFormat('pt-BR', { dateStyle: 'medium', timeStyle: 'short' }).format(
+    new Date(iso),
+  )
 
 const formatDateOnly = (iso: string) =>
   new Intl.DateTimeFormat('pt-BR', { dateStyle: 'medium' }).format(new Date(iso))
 </script>
 
 <template>
+  <SuccessModal
+    :open="showSuccessModal"
+    title="Service order created successfully!"
+    description="The new service order has been registered."
+    :listPath="SERVICE_ORDERS"
+    secondaryLabel="Create another order"
+    @secondary="handleCreateAnother"
+    @close="showSuccessModal = false"
+  />
+
   <div class="p-8">
     <div>
       <h1 class="text-2xl font-bold text-gray-900">
@@ -226,7 +301,6 @@ const formatDateOnly = (iso: string) =>
 
     <form @submit.prevent="onSubmit">
       <div class="py-6 flex flex-col gap-5">
-
         <!-- General fields -->
         <div class="grid grid-cols-3 gap-4">
           <Fieldset id="service_type_id" label="Service Type" :error="errors.service_type_id">
@@ -279,7 +353,11 @@ const formatDateOnly = (iso: string) =>
             <Fieldset id="total_hours" label="Total hours">
               <Input
                 id="total_hours"
-                :model-value="serviceOrder.total_hours != null ? (Math.floor(serviceOrder.total_hours * 100) / 100).toFixed(2) : '—'"
+                :model-value="
+                  serviceOrder.total_hours != null
+                    ? (Math.floor(serviceOrder.total_hours * 100) / 100).toFixed(2)
+                    : '—'
+                "
                 disabled
               />
             </Fieldset>
@@ -297,7 +375,7 @@ const formatDateOnly = (iso: string) =>
             <p class="text-sm text-gray-500 mt-1">
               {{
                 formState === 'new'
-                  ? 'Explain the reason for the selected status.'
+                  ? statusReasonDescription
                   : 'Status change history for this order.'
               }}
             </p>
@@ -341,7 +419,9 @@ const formatDateOnly = (iso: string) =>
                 {{ statusConfig[history.status]?.label }}
               </span>
               <span class="text-gray-400 text-xs">{{ formatDate(history.created_at) }}</span>
-              <span v-if="history.reason" class="text-gray-500 text-xs">— {{ history.reason }}</span>
+              <span v-if="history.reason" class="text-gray-500 text-xs"
+                >— {{ history.reason }}</span
+              >
             </div>
           </div>
         </template>
@@ -350,28 +430,17 @@ const formatDateOnly = (iso: string) =>
 
         <!-- Work Sessions -->
         <div class="rounded-xl border border-blue-100 bg-blue-50/50 p-5 flex flex-col gap-5">
-          <div class="flex items-center justify-between">
-            <div>
-              <h2 class="text-lg font-bold text-blue-900">Work Sessions</h2>
-              <p class="text-sm text-blue-600/70 mt-0.5">Employees and their session histories.</p>
-            </div>
-            <Button
-              v-if="formState === 'new'"
-              type="button"
-              variant="outline"
-              icon="lucide:plus"
-              @click="addSession"
-            >
-              Add session
-            </Button>
+          <div>
+            <h2 class="text-lg font-bold text-gray-900">Work Sessions</h2>
+            <p class="text-sm text-gray-500 mt-0.5">Employees and their session histories.</p>
           </div>
 
           <!-- New mode: editable sessions -->
           <template v-if="formState === 'new'">
-            <div v-if="workSessions.length === 0" class="text-sm text-blue-400 text-center py-6">
-              No sessions added yet. Click "Add session" to get started.
+            <div v-if="workSessions.length === 0" class="text-sm text-gray-400 text-center py-4">
+              No sessions added yet.
             </div>
-            <div v-else class="flex flex-col gap-4">
+            <div v-if="workSessions.length > 0" class="flex flex-col gap-4">
               <div
                 v-for="(session, si) in workSessions"
                 :key="si"
@@ -381,7 +450,7 @@ const formatDateOnly = (iso: string) =>
                   <span class="text-sm font-semibold text-gray-800">Session {{ si + 1 }}</span>
                   <button
                     type="button"
-                    class="text-red-400 hover:text-red-600 transition-colors"
+                    class="cursor-pointer text-red-400 hover:text-red-600 transition-colors"
                     title="Remove session"
                     @click="removeSession(si)"
                   >
@@ -401,19 +470,12 @@ const formatDateOnly = (iso: string) =>
 
                 <!-- Histories -->
                 <div class="flex flex-col gap-3">
-                  <div class="flex items-center justify-between">
-                    <span class="text-xs font-semibold text-gray-500 uppercase tracking-wide">Histories</span>
-                    <button
-                      type="button"
-                      class="text-blue-500 hover:text-blue-700 transition-colors"
-                      title="Add history"
-                      @click="addHistory(si)"
-                    >
-                      <Icon icon="lucide:circle-plus" class="size-4" />
-                    </button>
-                  </div>
+                  <span class="text-xs font-semibold text-gray-500 uppercase tracking-wide">Histories</span>
 
-                  <div v-if="session.histories.length === 0" class="text-xs text-gray-400 py-2 text-center">
+                  <div
+                    v-if="session.histories.length === 0"
+                    class="text-xs text-gray-400 py-2 text-center"
+                  >
                     No histories added.
                   </div>
                   <div v-else class="flex flex-col gap-2">
@@ -436,7 +498,10 @@ const formatDateOnly = (iso: string) =>
                           v-model="history.occurred_at"
                         />
                       </Fieldset>
-                      <Fieldset :id="`session-${si}-history-${hi}-observations`" label="Observations">
+                      <Fieldset
+                        :id="`session-${si}-history-${hi}-observations`"
+                        label="Observations"
+                      >
                         <div class="flex gap-2 items-center">
                           <Input
                             :id="`session-${si}-history-${hi}-observations`"
@@ -455,14 +520,37 @@ const formatDateOnly = (iso: string) =>
                       </Fieldset>
                     </div>
                   </div>
+
+                  <!-- Add history button -->
+                  <button
+                    type="button"
+                    class="cursor-pointer flex items-center gap-1.5 text-xs text-blue-500 hover:text-blue-700 transition-colors self-start"
+                    @click="addHistory(si)"
+                  >
+                    <Icon icon="lucide:circle-plus" class="size-3.5" />
+                    Add history
+                  </button>
                 </div>
               </div>
             </div>
+
+            <!-- Add session button -->
+            <button
+              type="button"
+              class="cursor-pointer flex items-center gap-1.5 text-sm text-blue-500 hover:text-blue-700 transition-colors self-start font-medium"
+              @click="addSession"
+            >
+              <Icon icon="lucide:plus" class="size-4" />
+              Add session
+            </button>
           </template>
 
           <!-- Visualize mode: readonly sessions -->
           <template v-if="formState === 'visualize' && serviceOrder">
-            <div v-if="serviceOrder.work_sessions.length === 0" class="text-sm text-blue-400 text-center py-6">
+            <div
+              v-if="serviceOrder.work_sessions.length === 0"
+              class="text-sm text-blue-400 text-center py-6"
+            >
               No work sessions yet.
             </div>
             <div v-else class="flex flex-col gap-3">
@@ -472,8 +560,21 @@ const formatDateOnly = (iso: string) =>
                 class="bg-white border border-blue-100 rounded-lg p-4 shadow-sm"
               >
                 <div class="flex items-center justify-between mb-3">
-                  <span class="text-sm font-semibold text-gray-800">{{ session.employee.name }}</span>
-                  <span class="text-xs text-gray-400">{{ formatDate(session.created_at) }}</span>
+                  <div>
+                    <span class="text-sm font-semibold text-gray-800">{{
+                      session.employee.name
+                    }}</span>
+                    <span
+                      v-if="session.total_hours != null"
+                      class="ml-2 text-xs text-blue-600 font-medium"
+                    >
+                      {{ (Math.floor(session.total_hours * 100) / 100).toFixed(2) }}h current total
+                      hours
+                    </span>
+                  </div>
+                  <span class="text-xs text-gray-400">
+                    Registered at {{ formatDate(session.created_at) }}
+                  </span>
                 </div>
                 <div v-if="session.histories.length > 0" class="flex flex-col gap-1.5">
                   <div
@@ -488,7 +589,9 @@ const formatDateOnly = (iso: string) =>
                     <span :class="workSessionStatusConfig[history.status]?.text">
                       {{ workSessionStatusConfig[history.status]?.label }}
                     </span>
-                    <span class="text-gray-400 text-xs ml-auto">{{ formatDate(history.occurred_at) }}</span>
+                    <span class="text-gray-400 text-xs ml-auto">{{
+                      formatDate(history.occurred_at)
+                    }}</span>
                     <span v-if="history.observations" class="text-gray-500 text-xs">
                       — {{ history.observations }}
                     </span>
@@ -525,7 +628,9 @@ const formatDateOnly = (iso: string) =>
         >
           Report progress
         </Button>
-        <Button type="submit" icon="lucide:plus" v-if="formState === 'new'">Create service order</Button>
+        <Button type="submit" icon="lucide:plus" v-if="formState === 'new'"
+          >Create service order</Button
+        >
       </div>
     </form>
   </div>

@@ -7,11 +7,12 @@ import Input from '@/components/ui/Input.vue'
 import Textarea from '@/components/ui/Textarea.vue'
 import Separator from '@/components/ui/Separator.vue'
 import Button from '@/components/ui/Button.vue'
+import SuccessModal from '@/components/ui/SuccessModal.vue'
 import { useQuery } from '@tanstack/vue-query'
 import { createPosition, editPosition, getPosition } from '@/services/queries'
 import { computed, ref, watch } from 'vue'
 import { useRouter } from 'vue-router'
-import { POSITIONS } from '@/utils/paths'
+import { POSITIONS, VIEW_POSITIONS } from '@/utils/paths'
 
 export type Props = {
   id?: string
@@ -38,9 +39,12 @@ const schema = z.object({
   description: z.string().nullish(),
 })
 
-const { handleSubmit, errors, defineField, setValues } = useForm({
+const { handleSubmit, errors, defineField, setValues, resetForm } = useForm({
   validationSchema: toTypedSchema(schema),
 })
+
+const showSuccessModal = ref(false)
+const successIsEdit = ref(false)
 
 watch(position, (pos) => {
   if (pos) {
@@ -52,7 +56,7 @@ const onSubmit = handleSubmit(async (values) => {
   if (formState.value == 'new') {
     createPosition(values)
       .then(() => {
-        router.push(POSITIONS)
+        showSuccessModal.value = true
       })
       .catch((error) => {
         console.error(error)
@@ -60,7 +64,8 @@ const onSubmit = handleSubmit(async (values) => {
   } else if (formState.value == 'edit' && id) {
     editPosition({ ...values, id })
       .then(() => {
-        router.push(POSITIONS)
+        successIsEdit.value = true
+        showSuccessModal.value = true
       })
       .catch((error) => {
         console.error(error)
@@ -68,11 +73,27 @@ const onSubmit = handleSubmit(async (values) => {
   }
 })
 
+function handleSecondary() {
+  showSuccessModal.value = false
+  resetForm()
+}
+
 const [name, nameAttrs] = defineField('name')
 const [description, descriptionAttrs] = defineField('description')
 </script>
 
 <template>
+  <SuccessModal
+    :open="showSuccessModal"
+    :title="successIsEdit ? 'Position updated successfully!' : 'Position created successfully!'"
+    :description="successIsEdit ? 'The position details have been updated.' : 'The new position has been added to your organization.'"
+    :listPath="POSITIONS"
+    :secondaryLabel="successIsEdit ? 'View record' : 'Create another position'"
+    :secondaryTo="successIsEdit && id ? VIEW_POSITIONS(id) : undefined"
+    @secondary="handleSecondary"
+    @close="showSuccessModal = false"
+  />
+
   <div class="p-8">
     <div>
       <h1 class="text-2xl font-bold text-gray-900">Create position</h1>
