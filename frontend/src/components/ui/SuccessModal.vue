@@ -52,8 +52,16 @@ function goToList() {
         class="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm"
       >
         <div
-          class="bg-white rounded-2xl shadow-xl w-full max-w-md mx-4 p-8 flex flex-col items-center gap-6"
+          class="bg-white rounded-2xl shadow-xl w-full max-w-md mx-4 p-8 flex flex-col items-center gap-6 relative"
         >
+          <button
+            type="button"
+            class="absolute top-4 right-4 text-gray-400 hover:text-gray-600 transition-colors cursor-pointer"
+            @click="emit('close')"
+          >
+            <Icon icon="lucide:x" width="18" height="18" />
+          </button>
+
           <div class="w-16 h-16 rounded-full bg-green-100 flex items-center justify-center">
             <Icon icon="lucide:check" width="32" height="32" class="text-green-600" />
           </div>

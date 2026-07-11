@@ -1,12 +1,15 @@
 <script setup lang="ts">
-import { ref } from 'vue'
+import { computed, ref, watch } from 'vue'
 import { useQuery } from '@tanstack/vue-query'
+import { Icon } from '@iconify/vue'
 import DataTable, { type Column } from '@/components/ui/DataTable.vue'
 import RowActionsPopover, { type RowAction } from '@/components/ui/RowActionsPopover.vue'
 import Button from '@/components/ui/Button.vue'
+import Input from '@/components/ui/Input.vue'
+import Select, { type SelectOption } from '@/components/ui/Select.vue'
 import { getEmployees } from '@/services/queries'
 import type { Employee } from '@/utils/api-types'
-import { EmployeeStatus } from '@/utils/enums'
+import { EmployeeStatus, EmployeeType } from '@/utils/enums'
 import { CREATE_EMPLOYEES, VIEW_EMPLOYEES } from '@/utils/paths'
 import { useRouter } from 'vue-router'
 
@@ -14,11 +17,55 @@ const router = useRouter()
 
 const page = ref(1)
 const pageSize = ref(10)
+const searchInput = ref('')
+const filter = ref('')
+const filterStatus = ref('')
+const filterType = ref('')
 
-const { data, isLoading } = useQuery({
-  queryKey: ['employees', page, pageSize],
-  queryFn: () => getEmployees({ page: page.value, size: pageSize.value }),
+const hasActiveFilters = computed(
+  () => filter.value !== '' || filterStatus.value !== '' || filterType.value !== '',
+)
+
+function applySearch() {
+  filter.value = searchInput.value
+  page.value = 1
+}
+
+function clearFilters() {
+  searchInput.value = ''
+  filter.value = ''
+  filterStatus.value = ''
+  filterType.value = ''
+  page.value = 1
+}
+
+watch([filterStatus, filterType], () => { page.value = 1 })
+
+const { data, isFetching, refetch } = useQuery({
+  queryKey: computed(() => ['employees', page.value, pageSize.value, filter.value, filterStatus.value, filterType.value]),
+  queryFn: () =>
+    getEmployees({
+      page: page.value,
+      size: pageSize.value,
+      filter: filter.value || undefined,
+      filter_status: filterStatus.value || undefined,
+      filter_type: filterType.value || undefined,
+    }),
 })
+
+const statusOptions: SelectOption[] = [
+  { value: '', label: 'All statuses' },
+  { value: EmployeeStatus.Active, label: 'Active' },
+  { value: EmployeeStatus.Inactive, label: 'Inactive' },
+  { value: EmployeeStatus.OnVacation, label: 'On Vacation' },
+  { value: EmployeeStatus.SickLeave, label: 'Sick Leave' },
+]
+
+const typeOptions: SelectOption[] = [
+  { value: '', label: 'All types' },
+  { value: EmployeeType.Independent, label: 'Independent' },
+  { value: EmployeeType.Employee, label: 'Employee' },
+]
 
 const columns: Column<Employee>[] = [
   { key: 'status', label: 'Status' },
@@ -42,13 +89,8 @@ const formatDate = (iso: string) =>
 const formatType = (type: string) =>
   type.replace(/_/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase())
 
-const onView = (row: Employee) => {
-  router.push(VIEW_EMPLOYEES(row.id))
-}
-
-const onDelete = (row: Employee) => {
-  console.log('delete', row)
-}
+const onView = (row: Employee) => router.push(VIEW_EMPLOYEES(row.id))
+const onDelete = (row: Employee) => console.log('delete', row)
 
 const rowActions: RowAction[] = [
   { key: 'view', label: 'View', icon: 'lucide:eye' },
@@ -68,16 +110,34 @@ const onAction = (key: string, row: Employee) => {
         <h1 class="text-2xl font-bold text-gray-900">Employees</h1>
         <p class="text-sm text-gray-500 mt-1">Manage all employees in your organization.</p>
       </div>
-
       <Button :to="CREATE_EMPLOYEES" icon="lucide:plus">New employee</Button>
     </div>
 
-<div v-if="isLoading" class="flex items-center justify-center py-20 text-gray-400 text-sm">
-      Loading...
+    <!-- Filters -->
+    <div class="mb-4 flex flex-wrap items-center gap-3">
+      <form class="flex gap-2" @submit.prevent="applySearch">
+        <Input v-model="searchInput" placeholder="Search by name…" class="w-64" />
+        <Button type="submit" variant="secondary" icon="lucide:search">Search</Button>
+      </form>
+
+      <Select v-model="filterStatus" :options="statusOptions" placeholder="All statuses" />
+      <Select v-model="filterType" :options="typeOptions" placeholder="All types" />
+
+      <Button v-if="hasActiveFilters" variant="ghost" icon="lucide:x" @click="clearFilters">
+        Clear filters
+      </Button>
+
+      <button
+        type="button"
+        class="ml-auto flex items-center gap-1.5 px-3 py-2 text-sm font-medium text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-lg transition-colors cursor-pointer"
+        @click="() => refetch()"
+      >
+        <Icon icon="lucide:refresh-cw" width="16" height="16" :class="{ 'animate-spin': isFetching }" />
+        Reload
+      </button>
     </div>
 
     <DataTable
-      v-else
       v-model:page="page"
       v-model:items-per-page="pageSize"
       :columns="columns"

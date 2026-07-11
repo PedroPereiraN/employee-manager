@@ -18,6 +18,8 @@ class ListPaginatedEmployeesUsecase(
             page=input.page,
             size=input.size,
             filter=input.filter,
+            filter_status=input.filter_status,
+            filter_type=input.filter_type,
         )
 
         return output

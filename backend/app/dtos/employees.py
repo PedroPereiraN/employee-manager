@@ -71,6 +71,8 @@ class ListPaginatedEmployeesInputDto(BaseModel):
     page: int
     size: int
     filter: Optional[str] = None
+    filter_status: Optional[EmployeeStatus] = None
+    filter_type: Optional[EmployeeType] = None
 
 
 class ListEmployeeInputDto(BaseModel):

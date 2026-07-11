@@ -18,12 +18,14 @@ export const auth = async ({ email, password }: { email: string; password: strin
 export const getPositions = async ({
   page,
   size,
+  filter,
 }: {
   page: number
   size: number
+  filter?: string
 }): Promise<PaginatedResponse<Position>> => {
   const res = await appClient.get<PaginatedResponse<Position>>('/positions', {
-    params: { page, size },
+    params: { page, size, filter: filter || undefined },
   })
   return res.data
 }
@@ -69,12 +71,24 @@ export const editPosition = async ({
 export const getEmployees = async ({
   page,
   size,
+  filter,
+  filter_status,
+  filter_type,
 }: {
   page: number
   size: number
+  filter?: string
+  filter_status?: string
+  filter_type?: string
 }): Promise<PaginatedResponse<Employee>> => {
   const res = await appClient.get<PaginatedResponse<Employee>>('/employee', {
-    params: { page, size },
+    params: {
+      page,
+      size,
+      filter: filter || undefined,
+      filter_status: filter_status || undefined,
+      filter_type: filter_type || undefined,
+    },
   })
   return res.data
 }
@@ -82,12 +96,14 @@ export const getEmployees = async ({
 export const getServiceTypes = async ({
   page,
   size,
+  filter,
 }: {
   page: number
   size: number
+  filter?: string
 }): Promise<PaginatedResponse<ServiceType>> => {
   const res = await appClient.get<PaginatedResponse<ServiceType>>('/service_types', {
-    params: { page, size },
+    params: { page, size, filter: filter || undefined },
   })
   return res.data
 }
@@ -168,12 +184,16 @@ export const editEmployee = async (data: {
 export const getUsers = async ({
   page,
   size,
+  filter,
+  filter_role,
 }: {
   page: number
   size: number
+  filter?: string
+  filter_role?: string
 }): Promise<PaginatedResponse<User>> => {
   const res = await appClient.get<PaginatedResponse<User>>('/users', {
-    params: { page, size },
+    params: { page, size, filter: filter || undefined, filter_role: filter_role || undefined },
   })
   return res.data
 }
@@ -207,12 +227,16 @@ export const editUser = async (data: {
 export const getServiceOrders = async ({
   page,
   size,
+  filter,
+  filter_status,
 }: {
   page: number
   size: number
+  filter?: string
+  filter_status?: string
 }): Promise<PaginatedResponse<PaginatedServiceOrder>> => {
   const res = await appClient.get<PaginatedResponse<PaginatedServiceOrder>>('/service_orders', {
-    params: { page, size },
+    params: { page, size, filter: filter || undefined, filter_status: filter_status || undefined },
   })
   return res.data
 }

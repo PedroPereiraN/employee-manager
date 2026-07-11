@@ -37,6 +37,8 @@ class EmployeeRepository:
         page: int = 1,
         size: int = 10,
         filter: Optional[str] = None,
+        filter_status=None,
+        filter_type=None,
     ) -> PaginatedResponseDto[OutputEmployeeDto]:
         query = (
             self.db.query(EmployeeModel)
@@ -47,6 +49,10 @@ class EmployeeRepository:
             query = query.filter(
                 EmployeeModel.name.ilike(f"%{filter}%"),
             )
+        if filter_status:
+            query = query.filter(EmployeeModel.status == filter_status)
+        if filter_type:
+            query = query.filter(EmployeeModel.type == filter_type)
         total = query.with_entities(func.count(EmployeeModel.id)).scalar()
 
         query = query.order_by(EmployeeModel.created_at.asc())

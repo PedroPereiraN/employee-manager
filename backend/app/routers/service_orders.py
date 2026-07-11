@@ -3,6 +3,7 @@ from uuid import UUID
 from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
 from app.dtos.paginated_response import PaginatedResponseDto
+from app.enums.service_order_status import ServiceOrderStatus
 from app.dtos.service_orders import (
     CreateServiceOrderInputDto,
     CreateServiceOrderOutputDto,
@@ -61,12 +62,15 @@ async def list_paginated_service_orders(
     page: int = 1,
     size: int = 10,
     filter: Optional[str] = None,
+    filter_status: Optional[ServiceOrderStatus] = None,
     db: Session = Depends(get_db),
     _: str = Depends(get_token),
 ):
     service_order_repository = ServiceOrderRepository(db=db)
 
-    input = ListPaginatedServiceOrdersInputDto(page=page, size=size, filter=filter)
+    input = ListPaginatedServiceOrdersInputDto(
+        page=page, size=size, filter=filter, filter_status=filter_status
+    )
 
     return ListPaginatedServiceOrdersUsecase(
         service_order_repository=service_order_repository

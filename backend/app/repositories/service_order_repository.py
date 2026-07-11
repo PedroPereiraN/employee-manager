@@ -18,12 +18,30 @@ from math import ceil
 from sqlalchemy import func, select
 from datetime import datetime
 
+from app.enums.work_session_status import WorkSessionStatus
 from app.models.service_order import (
     ServiceOrderModel,
     ServiceOrderStatusHistoryModel,
     WorkSessionHistoryModel,
     WorkSessionModel,
 )
+
+
+def _calculate_total_hours(histories: list) -> Optional[float]:
+    if not histories:
+        return None
+    active_statuses = {WorkSessionStatus.started, WorkSessionStatus.resumed}
+    end_statuses = {WorkSessionStatus.paused, WorkSessionStatus.completed, WorkSessionStatus.stopped}
+    sorted_histories = sorted(histories, key=lambda h: h.occurred_at)
+    total_seconds = 0.0
+    active_start = None
+    for h in sorted_histories:
+        if h.status in active_statuses:
+            active_start = h.occurred_at
+        elif h.status in end_statuses and active_start is not None:
+            total_seconds += (h.occurred_at - active_start).total_seconds()
+            active_start = None
+    return total_seconds / 3600 if total_seconds > 0 else None
 
 
 class ServiceOrderRepository:
@@ -60,6 +78,7 @@ class ServiceOrderRepository:
         page: int = 1,
         size: int = 10,
         filter: Optional[str] = None,
+        filter_status=None,
     ) -> PaginatedResponseDto[OutputPaginatedServiceOrderDto]:
         work_sessions_count = (
             select(func.count(WorkSessionModel.id))
@@ -76,11 +95,18 @@ class ServiceOrderRepository:
             query = query.filter(
                 ServiceOrderModel.order_number.ilike(f"%{filter}%"),
             )
-        total = (
-            self.db.query(func.count(ServiceOrderModel.id))
-            .filter(ServiceOrderModel.deleted_at.is_(None))
-            .scalar()
+        if filter_status:
+            query = query.filter(ServiceOrderModel.status == filter_status)
+        total_query = self.db.query(func.count(ServiceOrderModel.id)).filter(
+            ServiceOrderModel.deleted_at.is_(None)
         )
+        if filter:
+            total_query = total_query.filter(
+                ServiceOrderModel.order_number.ilike(f"%{filter}%")
+            )
+        if filter_status:
+            total_query = total_query.filter(ServiceOrderModel.status == filter_status)
+        total = total_query.scalar()
         query = query.order_by(ServiceOrderModel.created_at.asc())
         items = query.offset((page - 1) * size).limit(size).all()
 
@@ -185,6 +211,7 @@ class ServiceOrderRepository:
                             id=ws.id,
                             service_order_id=ws.service_order_id,
                             employee_id=ws.employee_id,
+                            total_hours=_calculate_total_hours(ws.histories),
                             created_at=ws.created_at,
                         )
                         for ws in new_work_sessions
@@ -208,9 +235,6 @@ class ServiceOrderRepository:
 
             if new_histories:
                 ws_ids = list({h.work_session_id for h in new_histories})
-                self.db.query(WorkSessionModel).filter(
-                    WorkSessionModel.id.in_(ws_ids)
-                ).update({"updated_at": now}, synchronize_session=False)
                 self.db.add_all(
                     [
                         WorkSessionHistoryModel(
@@ -224,6 +248,19 @@ class ServiceOrderRepository:
                         for h in new_histories
                     ]
                 )
+                self.db.flush()
+                for ws_id in ws_ids:
+                    all_histories = (
+                        self.db.query(WorkSessionHistoryModel)
+                        .filter(WorkSessionHistoryModel.work_session_id == ws_id)
+                        .all()
+                    )
+                    self.db.query(WorkSessionModel).filter(
+                        WorkSessionModel.id == ws_id
+                    ).update(
+                        {"updated_at": now, "total_hours": _calculate_total_hours(all_histories)},
+                        synchronize_session=False,
+                    )
 
             self.db.commit()
         except IntegrityError as e:

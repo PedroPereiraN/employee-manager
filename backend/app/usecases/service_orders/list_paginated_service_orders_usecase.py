@@ -24,6 +24,7 @@ class ListPaginatedServiceOrdersUsecase(
             page=input.page,
             size=input.size,
             filter=input.filter,
+            filter_status=input.filter_status,
         )
 
         return output

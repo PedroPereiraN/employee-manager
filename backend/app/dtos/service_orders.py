@@ -30,6 +30,7 @@ class OutputWorkSessionDto(BaseModel):
     id: UUID
     service_order_id: UUID
     employee: OutputEmployeeDto
+    total_hours: Optional[float] = None
     created_at: datetime
     updated_at: Optional[datetime] = None
     deleted_at: Optional[datetime] = None
@@ -132,6 +133,7 @@ class CreateServiceOrderOutputDto(BaseModel):
 
 class ListPaginatedServiceOrdersInputDto(BaseModel):
     filter: Optional[str] = None
+    filter_status: Optional[ServiceOrderStatus] = None
     page: int
     size: int
 

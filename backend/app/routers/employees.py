@@ -16,6 +16,8 @@ from app.dtos.employees import (
     UpdateEmployeeInputDto,
     UpdateEmployeeOutputDto,
 )
+from app.enums.employee_status import EmployeeStatus
+from app.enums.employee_type import EmployeeType
 from app.repositories.employee_repository import EmployeeRepository
 from app.repositories.position_repository import PositionRepository
 from app.usecases.employees.create_employee_usecase import CreateEmployeeUsecase
@@ -50,12 +52,17 @@ async def list_paginated_employees(
     page: int = 1,
     size: int = 10,
     filter: Optional[str] = None,
+    filter_status: Optional[EmployeeStatus] = None,
+    filter_type: Optional[EmployeeType] = None,
     db: Session = Depends(get_db),
     _: str = Depends(get_token),
 ):
     employee_repository = EmployeeRepository(db=db)
 
-    input = ListPaginatedEmployeesInputDto(page=page, size=size, filter=filter)
+    input = ListPaginatedEmployeesInputDto(
+        page=page, size=size, filter=filter,
+        filter_status=filter_status, filter_type=filter_type,
+    )
 
     return ListPaginatedEmployeesUsecase(
         employee_repository=employee_repository
