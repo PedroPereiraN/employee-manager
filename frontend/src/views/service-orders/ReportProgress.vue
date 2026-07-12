@@ -10,6 +10,7 @@ import Button from '@/components/ui/Button.vue'
 import SuccessModal from '@/components/ui/SuccessModal.vue'
 import Select from '@/components/ui/Select.vue'
 import type { SelectOption } from '@/components/ui/Select.vue'
+import RegisterSelector from '@/components/ui/RegisterSelector.vue'
 import { Icon } from '@iconify/vue'
 import { useQuery } from '@tanstack/vue-query'
 import { getEmployees, getServiceOrder, reportServiceOrderProgress } from '@/services/queries'
@@ -31,14 +32,6 @@ const { data: serviceOrder } = useQuery({
   queryFn: () => getServiceOrder(id),
 })
 
-const { data: employeesData } = useQuery({
-  queryKey: ['employees', { page: 1, size: 100 }],
-  queryFn: () => getEmployees({ page: 1, size: 100 }),
-})
-
-const employeeOptions = computed<SelectOption[]>(
-  () => employeesData.value?.items.map((e) => ({ value: e.id, label: e.name })) ?? [],
-)
 
 const statusOptions: SelectOption[] = [
   { value: ServiceOrderStatus.NotStarted, label: 'Not Started' },
@@ -463,10 +456,14 @@ function handleReportAgain() {
 
               <div class="grid grid-cols-3 gap-4">
                 <Fieldset :id="`session-${si}-employee`" label="Employee">
-                  <Select
+                  <RegisterSelector
                     v-model="session.employee_id"
-                    :options="employeeOptions"
+                    :columns="[{ key: 'name', label: 'Name' }]"
+                    :query-key="['employees']"
+                    :query-fn="(p) => getEmployees(p)"
                     placeholder="Select employee…"
+                    search-placeholder="Search by name…"
+                    modal-title="Select Employee"
                   />
                 </Fieldset>
               </div>

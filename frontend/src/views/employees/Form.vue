@@ -10,6 +10,7 @@ import Button from '@/components/ui/Button.vue'
 import SuccessModal from '@/components/ui/SuccessModal.vue'
 import Select from '@/components/ui/Select.vue'
 import type { SelectOption } from '@/components/ui/Select.vue'
+import RegisterSelector from '@/components/ui/RegisterSelector.vue'
 import { useQuery } from '@tanstack/vue-query'
 import { createEmployee, editEmployee, getEmployee, getPositions } from '@/services/queries'
 import { computed, ref, watch } from 'vue'
@@ -32,14 +33,6 @@ const { data: employee } = useQuery({
   enabled: computed(() => !!id),
 })
 
-const { data: positionsData } = useQuery({
-  queryKey: ['positions', { page: 1, size: 50 }],
-  queryFn: () => getPositions({ page: 1, size: 50 }),
-})
-
-const positionOptions = computed<SelectOption[]>(
-  () => positionsData.value?.items.map((p) => ({ value: p.id, label: p.name })) ?? [],
-)
 
 const statusOptions: SelectOption[] = [
   { value: EmployeeStatus.Active, label: 'Active' },
@@ -256,10 +249,15 @@ const [positionId] = defineField('position_id')
             />
           </Fieldset>
           <Fieldset id="position_id" label="Position" :error="errors.position_id">
-            <Select
+            <RegisterSelector
               v-model="positionId as string"
-              :options="positionOptions"
+              :display-value="employee?.position?.name"
+              :columns="[{ key: 'name', label: 'Name' }]"
+              :query-key="['positions']"
+              :query-fn="(p) => getPositions(p)"
               placeholder="Select position…"
+              search-placeholder="Search by name…"
+              modal-title="Select Position"
               :disabled="formState == 'visualize'"
             />
           </Fieldset>

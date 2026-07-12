@@ -10,6 +10,7 @@ import Button from '@/components/ui/Button.vue'
 import SuccessModal from '@/components/ui/SuccessModal.vue'
 import Select from '@/components/ui/Select.vue'
 import type { SelectOption } from '@/components/ui/Select.vue'
+import RegisterSelector from '@/components/ui/RegisterSelector.vue'
 import { Icon } from '@iconify/vue'
 import { useQuery } from '@tanstack/vue-query'
 import {
@@ -41,23 +42,6 @@ const { data: serviceOrder } = useQuery({
   enabled: computed(() => !!id),
 })
 
-const { data: serviceTypesData } = useQuery({
-  queryKey: ['service-types', { page: 1, size: 50 }],
-  queryFn: () => getServiceTypes({ page: 1, size: 50 }),
-})
-
-const { data: employeesData } = useQuery({
-  queryKey: ['employees', { page: 1, size: 100 }],
-  queryFn: () => getEmployees({ page: 1, size: 100 }),
-})
-
-const serviceTypeOptions = computed<SelectOption[]>(
-  () => serviceTypesData.value?.items.map((s) => ({ value: s.id, label: s.name })) ?? [],
-)
-
-const employeeOptions = computed<SelectOption[]>(
-  () => employeesData.value?.items.map((e) => ({ value: e.id, label: e.name })) ?? [],
-)
 
 const statusOptions: SelectOption[] = [
   { value: ServiceOrderStatus.NotStarted, label: 'Not Started' },
@@ -304,10 +288,15 @@ const formatDateOnly = (iso: string) =>
         <!-- General fields -->
         <div class="grid grid-cols-3 gap-4">
           <Fieldset id="service_type_id" label="Service Type" :error="errors.service_type_id">
-            <Select
+            <RegisterSelector
               v-model="serviceTypeId as string"
-              :options="serviceTypeOptions"
+              :display-value="serviceOrder?.service_type?.name"
+              :columns="[{ key: 'name', label: 'Name' }]"
+              :query-key="['service-types']"
+              :query-fn="(p) => getServiceTypes(p)"
               placeholder="Select service type…"
+              search-placeholder="Search by name…"
+              modal-title="Select Service Type"
               :disabled="formState === 'visualize'"
             />
           </Fieldset>
@@ -460,10 +449,14 @@ const formatDateOnly = (iso: string) =>
 
                 <div class="grid grid-cols-3 gap-4">
                   <Fieldset :id="`session-${si}-employee`" label="Employee">
-                    <Select
+                    <RegisterSelector
                       v-model="session.employee_id"
-                      :options="employeeOptions"
+                      :columns="[{ key: 'name', label: 'Name' }]"
+                      :query-key="['employees']"
+                      :query-fn="(p) => getEmployees(p)"
                       placeholder="Select employee…"
+                      search-placeholder="Search by name…"
+                      modal-title="Select Employee"
                     />
                   </Fieldset>
                 </div>
