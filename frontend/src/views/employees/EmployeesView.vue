@@ -19,11 +19,11 @@ const page = ref(1)
 const pageSize = ref(10)
 const searchInput = ref('')
 const filter = ref('')
-const filterStatus = ref('')
-const filterType = ref('')
+const filterStatus = ref('_all')
+const filterType = ref('_all')
 
 const hasActiveFilters = computed(
-  () => filter.value !== '' || filterStatus.value !== '' || filterType.value !== '',
+  () => filter.value !== '' || filterStatus.value !== '_all' || filterType.value !== '_all',
 )
 
 function applySearch() {
@@ -34,8 +34,8 @@ function applySearch() {
 function clearFilters() {
   searchInput.value = ''
   filter.value = ''
-  filterStatus.value = ''
-  filterType.value = ''
+  filterStatus.value = '_all'
+  filterType.value = '_all'
   page.value = 1
 }
 
@@ -48,13 +48,13 @@ const { data, isFetching, refetch } = useQuery({
       page: page.value,
       size: pageSize.value,
       filter: filter.value || undefined,
-      filter_status: filterStatus.value || undefined,
-      filter_type: filterType.value || undefined,
+      filter_status: filterStatus.value !== '_all' ? filterStatus.value : undefined,
+      filter_type: filterType.value !== '_all' ? filterType.value : undefined,
     }),
 })
 
 const statusOptions: SelectOption[] = [
-  { value: '', label: 'All statuses' },
+  { value: '_all', label: 'All statuses' },
   { value: EmployeeStatus.Active, label: 'Active' },
   { value: EmployeeStatus.Inactive, label: 'Inactive' },
   { value: EmployeeStatus.OnVacation, label: 'On Vacation' },
@@ -62,7 +62,7 @@ const statusOptions: SelectOption[] = [
 ]
 
 const typeOptions: SelectOption[] = [
-  { value: '', label: 'All types' },
+  { value: '_all', label: 'All types' },
   { value: EmployeeType.Independent, label: 'Independent' },
   { value: EmployeeType.Employee, label: 'Employee' },
 ]

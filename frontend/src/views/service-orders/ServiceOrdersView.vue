@@ -24,9 +24,9 @@ const page = ref(1)
 const pageSize = ref(10)
 const searchInput = ref('')
 const filter = ref('')
-const filterStatus = ref('')
+const filterStatus = ref('_all')
 
-const hasActiveFilters = computed(() => filter.value !== '' || filterStatus.value !== '')
+const hasActiveFilters = computed(() => filter.value !== '' || filterStatus.value !== '_all')
 
 function applySearch() {
   filter.value = searchInput.value
@@ -36,7 +36,7 @@ function applySearch() {
 function clearFilters() {
   searchInput.value = ''
   filter.value = ''
-  filterStatus.value = ''
+  filterStatus.value = '_all'
   page.value = 1
 }
 
@@ -49,12 +49,12 @@ const { data, isFetching, refetch } = useQuery({
       page: page.value,
       size: pageSize.value,
       filter: filter.value || undefined,
-      filter_status: filterStatus.value || undefined,
+      filter_status: filterStatus.value !== '_all' ? filterStatus.value : undefined,
     }),
 })
 
 const statusOptions: SelectOption[] = [
-  { value: '', label: 'All statuses' },
+  { value: '_all', label: 'All statuses' },
   { value: ServiceOrderStatus.NotStarted, label: 'Not Started' },
   { value: ServiceOrderStatus.Pending, label: 'Pending' },
   { value: ServiceOrderStatus.InProgress, label: 'In Progress' },

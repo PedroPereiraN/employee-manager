@@ -19,9 +19,9 @@ const page = ref(1)
 const pageSize = ref(10)
 const searchInput = ref('')
 const filter = ref('')
-const filterRole = ref('')
+const filterRole = ref('_all')
 
-const hasActiveFilters = computed(() => filter.value !== '' || filterRole.value !== '')
+const hasActiveFilters = computed(() => filter.value !== '' || filterRole.value !== '_all')
 
 function applySearch() {
   filter.value = searchInput.value
@@ -31,7 +31,7 @@ function applySearch() {
 function clearFilters() {
   searchInput.value = ''
   filter.value = ''
-  filterRole.value = ''
+  filterRole.value = '_all'
   page.value = 1
 }
 
@@ -44,12 +44,12 @@ const { data, isFetching, refetch } = useQuery({
       page: page.value,
       size: pageSize.value,
       filter: filter.value || undefined,
-      filter_role: filterRole.value || undefined,
+      filter_role: filterRole.value !== '_all' ? filterRole.value : undefined,
     }),
 })
 
 const roleOptions: SelectOption[] = [
-  { value: '', label: 'All roles' },
+  { value: '_all', label: 'All roles' },
   { value: UserRole.Admin, label: 'Admin' },
   { value: UserRole.Supervisor, label: 'Supervisor' },
   { value: UserRole.Member, label: 'Member' },
