@@ -98,6 +98,7 @@ export type WorkSession = {
   id: string
   service_order_id: string
   employee: Employee
+  total_hours: number | null
   created_at: string
   updated_at: string | null
   deleted_at: string | null

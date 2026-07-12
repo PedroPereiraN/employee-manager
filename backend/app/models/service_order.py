@@ -65,6 +65,7 @@ class WorkSessionModel(Base):
     employee_id: Mapped[PyUUID] = mapped_column(
         UUID(as_uuid=True), ForeignKey("employees.id"), nullable=False
     )
+    total_hours: Mapped[Optional[float]] = mapped_column(Float, nullable=True)
 
     employee: Mapped[EmployeeModel] = relationship(
         "EmployeeModel", back_populates="work_sessions"

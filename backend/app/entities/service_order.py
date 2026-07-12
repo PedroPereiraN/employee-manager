@@ -56,6 +56,7 @@ class WorkSessionProps(BaseModel):
     id: UUID
     service_order_id: UUID
     employee_id: UUID
+    total_hours: Optional[float] = None
     created_at: datetime
     updated_at: Optional[datetime] = None
     deleted_at: Optional[datetime] = None
