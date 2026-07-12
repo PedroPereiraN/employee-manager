@@ -263,17 +263,16 @@ const formatDateOnly = (iso: string) =>
 </script>
 
 <template>
-  <SuccessModal
-    :open="showSuccessModal"
-    title="Service order created successfully!"
-    description="The new service order has been registered."
-    :listPath="SERVICE_ORDERS"
-    secondaryLabel="Create another order"
-    @secondary="handleCreateAnother"
-    @close="showSuccessModal = false"
-  />
-
   <div class="p-8">
+    <SuccessModal
+      :open="showSuccessModal"
+      title="Service order created successfully!"
+      description="The new service order has been registered."
+      :listPath="SERVICE_ORDERS"
+      secondaryLabel="Create another order"
+      @secondary="handleCreateAnother"
+      @close="showSuccessModal = false"
+    />
     <div>
       <h1 class="text-2xl font-bold text-gray-900">
         {{ formState === 'new' ? 'New service order' : `Order #${serviceOrder?.order_number}` }}

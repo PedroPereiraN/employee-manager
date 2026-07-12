@@ -237,17 +237,16 @@ function handleReportAgain() {
 </script>
 
 <template>
-  <SuccessModal
-    :open="showSuccessModal"
-    title="Progress reported successfully!"
-    description="The service order has been updated with the new progress."
-    :listPath="SERVICE_ORDERS"
-    secondaryLabel="Report again"
-    @secondary="handleReportAgain"
-    @close="showSuccessModal = false"
-  />
-
   <div class="p-8">
+    <SuccessModal
+      :open="showSuccessModal"
+      title="Progress reported successfully!"
+      description="The service order has been updated with the new progress."
+      :listPath="SERVICE_ORDERS"
+      secondaryLabel="Report again"
+      @secondary="handleReportAgain"
+      @close="showSuccessModal = false"
+    />
     <div>
       <h1 class="text-2xl font-bold text-gray-900">
         Report Progress — Order #{{ serviceOrder?.order_number }}

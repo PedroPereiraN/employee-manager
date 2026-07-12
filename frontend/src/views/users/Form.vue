@@ -99,18 +99,17 @@ const [password, passwordAttrs] = defineField('password')
 </script>
 
 <template>
-  <SuccessModal
-    :open="showSuccessModal"
-    :title="successIsEdit ? 'User updated successfully!' : 'User created successfully!'"
-    :description="successIsEdit ? 'The user details have been updated.' : 'The new user has been added to your organization.'"
-    :listPath="USERS"
-    :secondaryLabel="successIsEdit ? 'View record' : 'Create another user'"
-    :secondaryTo="successIsEdit && id ? VIEW_USERS(id) : undefined"
-    @secondary="handleSecondary"
-    @close="showSuccessModal = false"
-  />
-
   <div class="p-8">
+    <SuccessModal
+      :open="showSuccessModal"
+      :title="successIsEdit ? 'User updated successfully!' : 'User created successfully!'"
+      :description="successIsEdit ? 'The user details have been updated.' : 'The new user has been added to your organization.'"
+      :listPath="USERS"
+      :secondaryLabel="successIsEdit ? 'View record' : 'Create another user'"
+      :secondaryTo="successIsEdit && id ? VIEW_USERS(id) : undefined"
+      @secondary="handleSecondary"
+      @close="showSuccessModal = false"
+    />
     <div>
       <h1 class="text-2xl font-bold text-gray-900">
         {{ formState === 'new' ? 'Create user' : formState === 'edit' ? 'Edit user' : 'View user' }}

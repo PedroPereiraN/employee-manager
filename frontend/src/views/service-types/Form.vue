@@ -83,18 +83,17 @@ const [description, descriptionAttrs] = defineField('description')
 </script>
 
 <template>
-  <SuccessModal
-    :open="showSuccessModal"
-    :title="successIsEdit ? 'Service type updated successfully!' : 'Service type created successfully!'"
-    :description="successIsEdit ? 'The service type details have been updated.' : 'The new service type has been added to your organization.'"
-    :listPath="SERVICE_TYPES"
-    :secondaryLabel="successIsEdit ? 'View record' : 'Create another service type'"
-    :secondaryTo="successIsEdit && id ? VIEW_SERVICE_TYPES(id) : undefined"
-    @secondary="handleSecondary"
-    @close="showSuccessModal = false"
-  />
-
   <div class="p-8">
+    <SuccessModal
+      :open="showSuccessModal"
+      :title="successIsEdit ? 'Service type updated successfully!' : 'Service type created successfully!'"
+      :description="successIsEdit ? 'The service type details have been updated.' : 'The new service type has been added to your organization.'"
+      :listPath="SERVICE_TYPES"
+      :secondaryLabel="successIsEdit ? 'View record' : 'Create another service type'"
+      :secondaryTo="successIsEdit && id ? VIEW_SERVICE_TYPES(id) : undefined"
+      @secondary="handleSecondary"
+      @close="showSuccessModal = false"
+    />
     <div>
       <h1 class="text-2xl font-bold text-gray-900">Create service type</h1>
       <p class="text-sm text-gray-500 mt-1">Add a new service type to your organization.</p>

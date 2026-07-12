@@ -83,18 +83,17 @@ const [description, descriptionAttrs] = defineField('description')
 </script>
 
 <template>
-  <SuccessModal
-    :open="showSuccessModal"
-    :title="successIsEdit ? 'Position updated successfully!' : 'Position created successfully!'"
-    :description="successIsEdit ? 'The position details have been updated.' : 'The new position has been added to your organization.'"
-    :listPath="POSITIONS"
-    :secondaryLabel="successIsEdit ? 'View record' : 'Create another position'"
-    :secondaryTo="successIsEdit && id ? VIEW_POSITIONS(id) : undefined"
-    @secondary="handleSecondary"
-    @close="showSuccessModal = false"
-  />
-
   <div class="p-8">
+    <SuccessModal
+      :open="showSuccessModal"
+      :title="successIsEdit ? 'Position updated successfully!' : 'Position created successfully!'"
+      :description="successIsEdit ? 'The position details have been updated.' : 'The new position has been added to your organization.'"
+      :listPath="POSITIONS"
+      :secondaryLabel="successIsEdit ? 'View record' : 'Create another position'"
+      :secondaryTo="successIsEdit && id ? VIEW_POSITIONS(id) : undefined"
+      @secondary="handleSecondary"
+      @close="showSuccessModal = false"
+    />
     <div>
       <h1 class="text-2xl font-bold text-gray-900">Create position</h1>
       <p class="text-sm text-gray-500 mt-1">Add a new job position to your organization.</p>

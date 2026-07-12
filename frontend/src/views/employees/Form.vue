@@ -158,18 +158,17 @@ const [positionId] = defineField('position_id')
 </script>
 
 <template>
-  <SuccessModal
-    :open="showSuccessModal"
-    :title="successIsEdit ? 'Employee updated successfully!' : 'Employee created successfully!'"
-    :description="successIsEdit ? 'The employee details have been updated.' : 'The new employee has been added to your organization.'"
-    :listPath="EMPLOYEES"
-    :secondaryLabel="successIsEdit ? 'View record' : 'Create another employee'"
-    :secondaryTo="successIsEdit && id ? VIEW_EMPLOYEES(id) : undefined"
-    @secondary="handleSecondary"
-    @close="showSuccessModal = false"
-  />
-
   <div class="p-8">
+    <SuccessModal
+      :open="showSuccessModal"
+      :title="successIsEdit ? 'Employee updated successfully!' : 'Employee created successfully!'"
+      :description="successIsEdit ? 'The employee details have been updated.' : 'The new employee has been added to your organization.'"
+      :listPath="EMPLOYEES"
+      :secondaryLabel="successIsEdit ? 'View record' : 'Create another employee'"
+      :secondaryTo="successIsEdit && id ? VIEW_EMPLOYEES(id) : undefined"
+      @secondary="handleSecondary"
+      @close="showSuccessModal = false"
+    />
     <div>
       <h1 class="text-2xl font-bold text-gray-900">Create employee</h1>
       <p class="text-sm text-gray-500 mt-1">Add a new employee to your organization.</p>
