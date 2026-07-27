@@ -82,7 +82,7 @@ const workSessions = ref<WorkSessionInput[]>([])
 const addSession = () => {
   const histories: WorkSessionHistoryInput[] =
     status.value && status.value !== ServiceOrderStatus.NotStarted
-      ? [{ status: '', observations: '', occurred_at: new Date().toISOString().slice(0, 16) }]
+      ? [{ status: '', observations: '', occurred_at: localNow() }]
       : []
   workSessions.value.push({ employee_id: '', histories })
 }
@@ -95,7 +95,7 @@ const addHistory = (sessionIndex: number) => {
   workSessions.value[sessionIndex].histories.push({
     status: '',
     observations: '',
-    occurred_at: new Date().toISOString().slice(0, 16),
+    occurred_at: localNow(),
   })
 }
 
@@ -103,7 +103,9 @@ const removeHistory = (sessionIndex: number, historyIndex: number) => {
   workSessions.value[sessionIndex].histories.splice(historyIndex, 1)
 }
 
-const maxOccurredAt = new Date(Date.now() - new Date().getTimezoneOffset() * 60000).toISOString().slice(0, 16)
+const localNow = () => new Date(Date.now() - new Date().getTimezoneOffset() * 60000).toISOString().slice(0, 16)
+
+const maxOccurredAt = localNow()
 
 const isSessionLocked = (session: WorkSessionInput) => {
   const last = session.histories[session.histories.length - 1]
@@ -124,7 +126,7 @@ const { handleSubmit, errors, defineField, setValues, resetForm } = useForm({
   validationSchema: toTypedSchema(schema),
   initialValues: {
     status: ServiceOrderStatus.NotStarted,
-    finished_at: new Date().toISOString().slice(0, 16),
+    finished_at: localNow(),
   },
 })
 

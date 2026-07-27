@@ -122,7 +122,7 @@ const addExistingHistory = (wsId: string) => {
   existingSessionNewHistories.value[wsId].push({
     status: '',
     observations: '',
-    occurred_at: new Date().toISOString().slice(0, 16),
+    occurred_at: localNow(),
   })
 }
 
@@ -135,7 +135,7 @@ const newSessions = ref<WorkSessionInput[]>([])
 const addSession = () => {
   const histories: WorkSessionHistoryInput[] =
     status.value && status.value !== ServiceOrderStatus.NotStarted
-      ? [{ status: '', observations: '', occurred_at: new Date().toISOString().slice(0, 16) }]
+      ? [{ status: '', observations: '', occurred_at: localNow() }]
       : []
   newSessions.value.push({ employee_id: '', histories })
 }
@@ -148,7 +148,7 @@ const addHistory = (sessionIndex: number) => {
   newSessions.value[sessionIndex].histories.push({
     status: '',
     observations: '',
-    occurred_at: new Date().toISOString().slice(0, 16),
+    occurred_at: localNow(),
   })
 }
 
@@ -156,7 +156,9 @@ const removeHistory = (sessionIndex: number, historyIndex: number) => {
   newSessions.value[sessionIndex].histories.splice(historyIndex, 1)
 }
 
-const maxOccurredAt = new Date(Date.now() - new Date().getTimezoneOffset() * 60000).toISOString().slice(0, 16)
+const localNow = () => new Date(Date.now() - new Date().getTimezoneOffset() * 60000).toISOString().slice(0, 16)
+
+const maxOccurredAt = localNow()
 
 const isExistingSessionLocked = (sessionId: string, existingHistories: { status: string }[]) => {
   const newHistories = existingSessionNewHistories.value[sessionId] ?? []
