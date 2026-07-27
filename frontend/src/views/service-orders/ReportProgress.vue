@@ -12,11 +12,11 @@ import Select from '@/components/ui/Select.vue'
 import type { SelectOption } from '@/components/ui/Select.vue'
 import RegisterSelector from '@/components/ui/RegisterSelector.vue'
 import { Icon } from '@iconify/vue'
-import { useQuery } from '@tanstack/vue-query'
+import { useQuery, useQueryClient } from '@tanstack/vue-query'
 import { getEmployees, getServiceOrder, reportServiceOrderProgress } from '@/services/queries'
 import { computed, ref, watch } from 'vue'
 import { useRouter } from 'vue-router'
-import { SERVICE_ORDERS, VIEW_SERVICE_ORDERS } from '@/utils/paths'
+import { SERVICE_ORDERS, TIMELINE_SERVICE_ORDER, VIEW_SERVICE_ORDERS } from '@/utils/paths'
 import { ServiceOrderStatus, WorkSessionStatus } from '@/utils/enums'
 
 export type Props = {
@@ -26,6 +26,8 @@ export type Props = {
 const router = useRouter()
 
 const { id } = defineProps<Props>()
+
+const queryClient = useQueryClient()
 
 const { data: serviceOrder } = useQuery({
   queryKey: ['service-orders', id],
@@ -154,6 +156,20 @@ const removeHistory = (sessionIndex: number, historyIndex: number) => {
   newSessions.value[sessionIndex].histories.splice(historyIndex, 1)
 }
 
+const maxOccurredAt = new Date(Date.now() - new Date().getTimezoneOffset() * 60000).toISOString().slice(0, 16)
+
+const isExistingSessionLocked = (sessionId: string, existingHistories: { status: string }[]) => {
+  const newHistories = existingSessionNewHistories.value[sessionId] ?? []
+  const all = [...existingHistories, ...newHistories]
+  const lastStatus = all[all.length - 1]?.status
+  return lastStatus === WorkSessionStatus.Completed || lastStatus === WorkSessionStatus.Stopped
+}
+
+const isNewSessionLocked = (session: WorkSessionInput) => {
+  const last = session.histories[session.histories.length - 1]
+  return last?.status === WorkSessionStatus.Completed || last?.status === WorkSessionStatus.Stopped
+}
+
 // --- Form ---
 
 const schema = z.object({
@@ -233,7 +249,24 @@ function handleReportAgain() {
     existingSessionNewHistories.value[k] = []
   })
   resetForm()
+  queryClient.invalidateQueries({ queryKey: ['service-orders', id] })
 }
+
+const FINAL_STATUSES = new Set([ServiceOrderStatus.Completed, ServiceOrderStatus.Cancelled])
+
+const isOrderLocked = computed(() =>
+  !!serviceOrder.value && FINAL_STATUSES.has(serviceOrder.value.status as ServiceOrderStatus),
+)
+
+const successSecondaryTo = computed(() =>
+  FINAL_STATUSES.has(status.value as ServiceOrderStatus)
+    ? TIMELINE_SERVICE_ORDER(id)
+    : undefined,
+)
+
+const successSecondaryLabel = computed(() =>
+  FINAL_STATUSES.has(status.value as ServiceOrderStatus) ? 'View Timeline' : 'Report again',
+)
 </script>
 
 <template>
@@ -243,7 +276,8 @@ function handleReportAgain() {
       title="Progress reported successfully!"
       description="The service order has been updated with the new progress."
       :listPath="SERVICE_ORDERS"
-      secondaryLabel="Report again"
+      :secondaryLabel="successSecondaryLabel"
+      :secondaryTo="successSecondaryTo"
       @secondary="handleReportAgain"
       @close="showSuccessModal = false"
     />
@@ -258,6 +292,20 @@ function handleReportAgain() {
 
     <div v-if="!serviceOrder" class="flex items-center justify-center py-20 text-gray-400 text-sm">
       Loading…
+    </div>
+
+    <div v-else-if="isOrderLocked" class="mt-6 rounded-xl border border-red-100 bg-red-50 p-8 flex flex-col items-center gap-4 text-center">
+      <Icon icon="lucide:lock" class="size-10 text-red-400" />
+      <div>
+        <h2 class="text-lg font-semibold text-red-700">Order locked</h2>
+        <p class="text-sm text-red-500 mt-1">
+          This service order is <strong>{{ statusConfig[serviceOrder.status]?.label }}</strong> and cannot receive new progress reports.
+        </p>
+      </div>
+      <div class="flex gap-3 mt-2">
+        <Button variant="outline" :to="VIEW_SERVICE_ORDERS(id)">View Order</Button>
+        <Button :to="TIMELINE_SERVICE_ORDER(id)" icon="lucide:git-branch">View Timeline</Button>
+      </div>
     </div>
 
     <form v-else @submit.prevent="onSubmit">
@@ -331,8 +379,8 @@ function handleReportAgain() {
         <!-- Work Sessions: existing (readonly) + new (editable) in one box -->
         <div class="rounded-xl border border-blue-100 bg-blue-50/50 p-5 flex flex-col gap-5">
           <div>
-            <h2 class="text-lg font-bold text-gray-900">Work Sessions</h2>
-            <p class="text-sm text-gray-500 mt-0.5">Employees and their session histories.</p>
+            <h2 class="text-lg font-bold text-gray-900">Work History</h2>
+            <p class="text-sm text-gray-500 mt-0.5">Employees and their work history.</p>
           </div>
 
           <!-- Existing sessions -->
@@ -395,6 +443,7 @@ function handleReportAgain() {
                       <Input
                         :id="`existing-${session.id}-history-${hi}-occurred_at`"
                         type="datetime-local"
+                        :max="maxOccurredAt"
                         v-model="history.occurred_at"
                       />
                     </Fieldset>
@@ -419,7 +468,11 @@ function handleReportAgain() {
                 </div>
 
                 <!-- Add history button -->
+                <p v-if="isExistingSessionLocked(session.id, session.histories)" class="text-xs text-amber-600">
+                  Cannot add more history after a "Completed" or "Stopped" status.
+                </p>
                 <button
+                  v-else
                   type="button"
                   class="cursor-pointer flex items-center gap-1.5 text-xs text-blue-500 hover:text-blue-700 transition-colors self-start"
                   @click="addExistingHistory(session.id)"
@@ -468,10 +521,10 @@ function handleReportAgain() {
               </div>
 
               <div class="flex flex-col gap-3">
-                <span class="text-xs font-semibold text-gray-500 uppercase tracking-wide">Histories</span>
+                <span class="text-xs font-semibold text-gray-500 uppercase tracking-wide">History</span>
 
                 <div v-if="session.histories.length === 0" class="text-xs text-gray-400 py-2 text-center">
-                  No histories added.
+                  No history added.
                 </div>
                 <div v-else class="flex flex-col gap-2">
                   <div
@@ -490,6 +543,7 @@ function handleReportAgain() {
                       <Input
                         :id="`session-${si}-history-${hi}-occurred_at`"
                         type="datetime-local"
+                        :max="maxOccurredAt"
                         v-model="history.occurred_at"
                       />
                     </Fieldset>
@@ -514,7 +568,11 @@ function handleReportAgain() {
                 </div>
 
                 <!-- Add history button -->
+                <p v-if="isNewSessionLocked(session)" class="text-xs text-amber-600">
+                  Cannot add more history after a "Completed" or "Stopped" status.
+                </p>
                 <button
+                  v-else
                   type="button"
                   class="cursor-pointer flex items-center gap-1.5 text-xs text-blue-500 hover:text-blue-700 transition-colors self-start"
                   @click="addHistory(si)"
@@ -527,7 +585,13 @@ function handleReportAgain() {
           </div>
 
           <!-- Add session button -->
+          <template v-if="status === ServiceOrderStatus.NotStarted">
+            <p class="text-xs text-amber-600">
+              Work sessions cannot be added while the status is "Not Started".
+            </p>
+          </template>
           <button
+            v-else
             type="button"
             class="cursor-pointer flex items-center gap-1.5 text-sm text-blue-500 hover:text-blue-700 transition-colors self-start font-medium"
             @click="addSession"

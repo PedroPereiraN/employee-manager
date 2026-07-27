@@ -1,7 +1,7 @@
 from datetime import datetime
 from typing import List, Optional
 from uuid import UUID
-from pydantic import BaseModel
+from pydantic import BaseModel, field_validator
 
 from app.dtos.employees import OutputEmployeeDto
 from app.enums.service_order_status import ServiceOrderStatus
@@ -76,6 +76,13 @@ class CreateWorkSessionHistoryInputDto(BaseModel):
     status: WorkSessionStatus
     observations: Optional[str] = None
     occurred_at: datetime
+
+    @field_validator('occurred_at')
+    @classmethod
+    def occurred_at_not_in_future(cls, v: datetime) -> datetime:
+        if v > datetime.now():
+            raise ValueError('occurred_at cannot be in the future')
+        return v
 
 
 class CreateWorkSessionInputDto(BaseModel):
@@ -156,11 +163,25 @@ class ReportNewWorkSessionHistoryProgressInputDto(BaseModel):
     observations: Optional[str] = None
     occurred_at: datetime
 
+    @field_validator('occurred_at')
+    @classmethod
+    def occurred_at_not_in_future(cls, v: datetime) -> datetime:
+        if v > datetime.now():
+            raise ValueError('occurred_at cannot be in the future')
+        return v
+
 
 class ReportWorkSessionHistoryProgressInputDto(BaseModel):
     status: WorkSessionStatus
     observations: Optional[str] = None
     occurred_at: datetime
+
+    @field_validator('occurred_at')
+    @classmethod
+    def occurred_at_not_in_future(cls, v: datetime) -> datetime:
+        if v > datetime.now():
+            raise ValueError('occurred_at cannot be in the future')
+        return v
 
 
 class ReportWorkSessionProgressInputDto(BaseModel):

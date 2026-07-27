@@ -1,5 +1,6 @@
 from datetime import datetime
 from typing import Optional
+from fastapi import HTTPException
 from app.dtos.service_orders import ReportServiceOrderProgressInputDto
 from app.entities.service_order import ServiceOrderStatusHistoryProps, WorkSessionHistoryProps, WorkSessionProps
 from app.enums.service_order_status import ServiceOrderStatus
@@ -8,6 +9,7 @@ from app.repositories.service_order_repository import ServiceOrderRepository
 import uuid6
 
 TERMINAL_STATUSES = {ServiceOrderStatus.completed, ServiceOrderStatus.cancelled, ServiceOrderStatus.suspended}
+LOCKED_STATUSES = {ServiceOrderStatus.completed, ServiceOrderStatus.cancelled}
 
 
 class ReportServiceOrderProgressUsecase(
@@ -20,6 +22,12 @@ class ReportServiceOrderProgressUsecase(
         now = datetime.now()
 
         existing = self.service_order_repository.find_by_id(input.service_order_id)
+
+        if existing.status in LOCKED_STATUSES:
+            raise HTTPException(
+                status_code=422,
+                detail=f"Cannot report progress on a service order with status '{existing.status.value}'.",
+            )
 
         started_at: Optional[datetime] = existing.started_at
         finished_at: Optional[datetime] = None

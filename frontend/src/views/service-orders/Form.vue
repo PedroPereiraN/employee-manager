@@ -103,6 +103,13 @@ const removeHistory = (sessionIndex: number, historyIndex: number) => {
   workSessions.value[sessionIndex].histories.splice(historyIndex, 1)
 }
 
+const maxOccurredAt = new Date(Date.now() - new Date().getTimezoneOffset() * 60000).toISOString().slice(0, 16)
+
+const isSessionLocked = (session: WorkSessionInput) => {
+  const last = session.histories[session.histories.length - 1]
+  return last?.status === WorkSessionStatus.Completed || last?.status === WorkSessionStatus.Stopped
+}
+
 // --- vee-validate for scalar fields ---
 
 const schema = z.object({
@@ -419,8 +426,8 @@ const formatDateOnly = (iso: string) =>
         <!-- Work Sessions -->
         <div class="rounded-xl border border-blue-100 bg-blue-50/50 p-5 flex flex-col gap-5">
           <div>
-            <h2 class="text-lg font-bold text-gray-900">Work Sessions</h2>
-            <p class="text-sm text-gray-500 mt-0.5">Employees and their session histories.</p>
+            <h2 class="text-lg font-bold text-gray-900">Work History</h2>
+            <p class="text-sm text-gray-500 mt-0.5">Employees and their work history.</p>
           </div>
 
           <!-- New mode: editable sessions -->
@@ -460,15 +467,15 @@ const formatDateOnly = (iso: string) =>
                   </Fieldset>
                 </div>
 
-                <!-- Histories -->
+                <!-- History -->
                 <div class="flex flex-col gap-3">
-                  <span class="text-xs font-semibold text-gray-500 uppercase tracking-wide">Histories</span>
+                  <span class="text-xs font-semibold text-gray-500 uppercase tracking-wide">History</span>
 
                   <div
                     v-if="session.histories.length === 0"
                     class="text-xs text-gray-400 py-2 text-center"
                   >
-                    No histories added.
+                    No history added.
                   </div>
                   <div v-else class="flex flex-col gap-2">
                     <div
@@ -487,6 +494,7 @@ const formatDateOnly = (iso: string) =>
                         <Input
                           :id="`session-${si}-history-${hi}-occurred_at`"
                           type="datetime-local"
+                          :max="maxOccurredAt"
                           v-model="history.occurred_at"
                         />
                       </Fieldset>
@@ -514,7 +522,11 @@ const formatDateOnly = (iso: string) =>
                   </div>
 
                   <!-- Add history button -->
+                  <p v-if="isSessionLocked(session)" class="text-xs text-amber-600">
+                    Cannot add more history after a "Completed" or "Stopped" status.
+                  </p>
                   <button
+                    v-else
                     type="button"
                     class="cursor-pointer flex items-center gap-1.5 text-xs text-blue-500 hover:text-blue-700 transition-colors self-start"
                     @click="addHistory(si)"
@@ -527,7 +539,13 @@ const formatDateOnly = (iso: string) =>
             </div>
 
             <!-- Add session button -->
+            <template v-if="status === ServiceOrderStatus.NotStarted">
+              <p class="text-xs text-amber-600">
+                Work sessions cannot be added while the status is "Not Started".
+              </p>
+            </template>
             <button
+              v-else
               type="button"
               class="cursor-pointer flex items-center gap-1.5 text-sm text-blue-500 hover:text-blue-700 transition-colors self-start font-medium"
               @click="addSession"

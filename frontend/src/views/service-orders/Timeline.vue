@@ -317,12 +317,22 @@ const timeSlots = computed<TimeSlot[]>(() => {
           v-for="(slot, i) in timeSlots"
           :key="slot.timestamp"
           class="grid"
-          :class="i < timeSlots.length - 1 ? 'border-b border-gray-100' : ''"
+          :class="[
+            i < timeSlots.length - 1
+              ? timeSlots[i + 1].time === slot.time
+                ? 'border-b border-dashed border-gray-100'
+                : 'border-b border-gray-200'
+              : '',
+            timeSlots[i - 1]?.time === slot.time ? 'bg-gray-50/40' : '',
+          ]"
           :style="`grid-template-columns: 80px 1fr repeat(${sessions.length}, minmax(220px, 1fr))`"
         >
-          <!-- Time label -->
+          <!-- Time label (only shown for first row of each minute group) -->
           <div class="px-4 py-4 flex items-start pt-5">
-            <span class="text-xs font-mono text-gray-400 tabular-nums">{{ slot.time }}</span>
+            <span
+              v-if="timeSlots[i - 1]?.time !== slot.time"
+              class="text-xs font-mono text-gray-400 tabular-nums"
+            >{{ slot.time }}</span>
           </div>
 
           <!-- Status history cell -->
