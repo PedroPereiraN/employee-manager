@@ -139,6 +139,7 @@ type SessionEvent = {
   status: WorkSessionStatus
   observations: string | null
   occurred_at: string
+  created_at: string
   timestamp: number
 }
 
@@ -177,7 +178,8 @@ const timeSlots = computed<TimeSlot[]>(() => {
         status: h.status,
         observations: h.observations,
         occurred_at: h.occurred_at,
-        timestamp: new Date(h.occurred_at).getTime(),
+        created_at: h.created_at,
+        timestamp: new Date(h.created_at).getTime(),
       })
     }
   }
@@ -204,7 +206,7 @@ const timeSlots = computed<TimeSlot[]>(() => {
         last.sessionEvents[event.sessionId] = event
       }
     } else {
-      const isoStr = event.type === 'status' ? event.created_at : event.occurred_at
+      const isoStr = event.created_at
       const slot: TimeSlot = {
         time: formatTime(isoStr),
         timestamp: event.timestamp,
@@ -386,6 +388,9 @@ const timeSlots = computed<TimeSlot[]>(() => {
                 />
                 {{ sessionStyle[slot.sessionEvents[session.id].status]?.label ?? slot.sessionEvents[session.id].status }}
               </span>
+              <p class="text-xs text-gray-400 mt-1">
+                {{ formatDate(slot.sessionEvents[session.id].occurred_at) }}
+              </p>
               <p
                 v-if="slot.sessionEvents[session.id].observations"
                 class="text-xs text-gray-600 leading-relaxed mt-1"
