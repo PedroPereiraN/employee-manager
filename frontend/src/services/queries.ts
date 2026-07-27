@@ -1,6 +1,7 @@
 import { appClient, formClient } from '@/lib/axios'
 import type {
   Employee,
+  EmployeeHoursRanking,
   PaginatedResponse,
   PaginatedServiceOrder,
   Position,
@@ -281,6 +282,21 @@ export const getServiceOrderOverview = async ({
 }): Promise<ServiceOrderOverview> => {
   const res = await appClient.get<ServiceOrderOverview>('/service_orders/overview', {
     params: { from_date, to_date },
+  })
+  return res.data
+}
+
+export const getEmployeeHoursRanking = async ({
+  from_date,
+  to_date,
+  limit,
+}: {
+  from_date?: string
+  to_date?: string
+  limit?: number | null
+}): Promise<EmployeeHoursRanking> => {
+  const res = await appClient.get<EmployeeHoursRanking>('/dashboard/employee_hours_ranking', {
+    params: { from_date, to_date, limit: limit ?? undefined },
   })
   return res.data
 }

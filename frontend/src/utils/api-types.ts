@@ -21,6 +21,18 @@ export type ServiceOrderOverview = {
   by_status: Record<string, number>
 }
 
+export type EmployeeHoursRankingItem = {
+  employee_id: string
+  name: string
+  total_hours: number
+  session_count: number
+}
+
+export type EmployeeHoursRanking = {
+  total: number
+  items: EmployeeHoursRankingItem[]
+}
+
 export type PaginatedResponse<T> = {
   items: T[]
   total: number

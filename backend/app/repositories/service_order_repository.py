@@ -15,10 +15,11 @@ from app.enums.service_order_status import ServiceOrderStatus
 from app.mappers.service_order_mapper import ServiceOrderMapper
 from app.mappers.service_type_mapper import ServiceTypeMapper
 from math import ceil
-from sqlalchemy import func, select
+from sqlalchemy import func, select, desc
 from datetime import datetime
 
 from app.enums.work_session_status import WorkSessionStatus
+from app.models.employee import EmployeeModel
 from app.models.service_order import (
     ServiceOrderModel,
     ServiceOrderStatusHistoryModel,
@@ -269,6 +270,58 @@ class ServiceOrderRepository:
                 status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
                 detail=f"Integrity error: {e}",
             )
+
+    def get_employee_hours_ranking(
+        self,
+        from_date: Optional[datetime] = None,
+        to_date: Optional[datetime] = None,
+        limit: Optional[int] = 10,
+    ) -> dict:
+        ws_sub = select(
+            WorkSessionModel.employee_id,
+            func.coalesce(func.sum(WorkSessionModel.total_hours), 0).label('total_hours'),
+            func.count(WorkSessionModel.id).label('session_count'),
+        ).where(WorkSessionModel.deleted_at.is_(None))
+
+        if from_date:
+            ws_sub = ws_sub.where(WorkSessionModel.created_at >= from_date)
+        if to_date:
+            ws_sub = ws_sub.where(WorkSessionModel.created_at <= to_date)
+
+        ws_sub = ws_sub.group_by(WorkSessionModel.employee_id).subquery()
+
+        base_query = (
+            self.db.query(
+                EmployeeModel.id,
+                EmployeeModel.name,
+                func.coalesce(ws_sub.c.total_hours, 0).label('total_hours'),
+                func.coalesce(ws_sub.c.session_count, 0).label('session_count'),
+            )
+            .outerjoin(ws_sub, ws_sub.c.employee_id == EmployeeModel.id)
+            .filter(EmployeeModel.deleted_at.is_(None))
+            .order_by(desc('total_hours'), EmployeeModel.name)
+        )
+
+        total = (
+            self.db.query(func.count(EmployeeModel.id))
+            .filter(EmployeeModel.deleted_at.is_(None))
+            .scalar()
+        )
+
+        rows = base_query.limit(limit).all() if limit is not None else base_query.all()
+
+        return {
+            'total': total,
+            'items': [
+                {
+                    'employee_id': r.id,
+                    'name': r.name,
+                    'total_hours': float(r.total_hours) if r.total_hours else 0.0,
+                    'session_count': r.session_count or 0,
+                }
+                for r in rows
+            ],
+        }
 
     def get_overview(
         self,

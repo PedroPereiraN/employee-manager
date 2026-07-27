@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue'
 import { useQuery } from '@tanstack/vue-query'
-import { getServiceOrderOverview } from '@/services/queries'
+import { getEmployeeHoursRanking, getServiceOrderOverview } from '@/services/queries'
 import { ServiceOrderStatus } from '@/utils/enums'
 import { Icon } from '@iconify/vue'
 
@@ -61,6 +61,28 @@ const { data: overview, isLoading } = useQuery({
       to_date: toDate.value ? toUtcNaive(toDate.value, '23:59:59') : undefined,
     }),
 })
+
+// ─── Employee hours ranking ───────────────────────────────────────────────────
+
+const rankingLimit = ref<number | null>(10)
+
+const { data: ranking, isLoading: rankingLoading } = useQuery({
+  queryKey: computed(() => ['employee-hours-ranking', fromDate.value, toDate.value, rankingLimit.value]),
+  queryFn: () =>
+    getEmployeeHoursRanking({
+      from_date: fromDate.value ? toUtcNaive(fromDate.value, '00:00:00') : undefined,
+      to_date: toDate.value ? toUtcNaive(toDate.value, '23:59:59') : undefined,
+      limit: rankingLimit.value,
+    }),
+})
+
+function loadMore() {
+  rankingLimit.value = (rankingLimit.value ?? 0) + 10
+}
+
+function loadAll() {
+  rankingLimit.value = null
+}
 
 // ─── Status config ────────────────────────────────────────────────────────────
 
@@ -216,5 +238,83 @@ const statusOrder = [
         </div>
       </div>
     </template>
+
+    <!-- Employee hours ranking -->
+    <div class="mt-8">
+      <h2 class="text-lg font-bold text-gray-900 mb-4">Employees by hours worked</h2>
+
+      <div class="rounded-2xl border border-gray-200 bg-white shadow-sm overflow-hidden">
+        <!-- Loading -->
+        <div v-if="rankingLoading" class="flex items-center justify-center py-12 text-gray-400 text-sm">
+          <Icon icon="lucide:loader-2" class="size-5 animate-spin mr-2" />
+          Loading…
+        </div>
+
+        <template v-else-if="ranking">
+          <!-- Empty -->
+          <div v-if="ranking.items.length === 0" class="flex items-center justify-center py-12 text-gray-400 text-sm">
+            No work sessions recorded in this period.
+          </div>
+
+          <template v-else>
+            <!-- Table header -->
+            <div class="grid grid-cols-[2rem_1fr_auto_auto] gap-4 px-5 py-3 border-b border-gray-100 bg-gray-50">
+              <span class="text-xs font-semibold text-gray-400 uppercase tracking-wide">#</span>
+              <span class="text-xs font-semibold text-gray-400 uppercase tracking-wide">Employee</span>
+              <span class="text-xs font-semibold text-gray-400 uppercase tracking-wide text-right">Sessions</span>
+              <span class="text-xs font-semibold text-gray-400 uppercase tracking-wide text-right">Hours</span>
+            </div>
+
+            <!-- Rows -->
+            <div
+              v-for="(item, i) in ranking.items"
+              :key="item.employee_id"
+              class="grid grid-cols-[2rem_1fr_auto_auto] gap-4 px-5 py-3.5 items-center"
+              :class="i < ranking.items.length - 1 ? 'border-b border-gray-50' : ''"
+            >
+              <span class="text-sm font-mono text-gray-300 tabular-nums">{{ i + 1 }}</span>
+
+              <div class="flex items-center gap-3 min-w-0">
+                <div class="size-8 rounded-full bg-indigo-100 flex items-center justify-center shrink-0">
+                  <span class="text-xs font-bold text-indigo-600">{{ item.name.charAt(0).toUpperCase() }}</span>
+                </div>
+                <span class="text-sm font-medium text-gray-800 truncate">{{ item.name }}</span>
+              </div>
+
+              <span class="text-sm text-gray-500 text-right tabular-nums">{{ item.session_count }}</span>
+
+              <span class="text-sm font-semibold text-gray-900 text-right tabular-nums w-20">
+                {{ item.total_hours > 0 ? item.total_hours.toFixed(2) + 'h' : '—' }}
+              </span>
+            </div>
+
+            <!-- Load more / Load all -->
+            <div
+              v-if="rankingLimit !== null && ranking.total > ranking.items.length"
+              class="flex items-center gap-3 px-5 py-3 border-t border-gray-100 bg-gray-50"
+            >
+              <span class="text-xs text-gray-400 mr-auto">
+                Showing {{ ranking.items.length }} of {{ ranking.total }}
+              </span>
+              <button
+                type="button"
+                class="cursor-pointer text-xs font-medium text-indigo-600 hover:text-indigo-800 transition-colors"
+                @click="loadMore"
+              >
+                Load more
+              </button>
+              <span class="text-gray-200">|</span>
+              <button
+                type="button"
+                class="cursor-pointer text-xs font-medium text-indigo-600 hover:text-indigo-800 transition-colors"
+                @click="loadAll"
+              >
+                Load all
+              </button>
+            </div>
+          </template>
+        </template>
+      </div>
+    </div>
   </div>
 </template>
