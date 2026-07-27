@@ -138,6 +138,16 @@ class CreateServiceOrderOutputDto(BaseModel):
     status_histories: List[CreateServiceOrderStatusHistoryOutputDto]
 
 
+class ServiceOrderOverviewInputDto(BaseModel):
+    from_date: Optional[datetime] = None
+    to_date: Optional[datetime] = None
+
+
+class ServiceOrderOverviewOutputDto(BaseModel):
+    total: int
+    by_status: dict[str, int]
+
+
 class ListPaginatedServiceOrdersInputDto(BaseModel):
     filter: Optional[str] = None
     filter_status: Optional[ServiceOrderStatus] = None

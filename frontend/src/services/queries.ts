@@ -5,6 +5,7 @@ import type {
   PaginatedServiceOrder,
   Position,
   ServiceOrder,
+  ServiceOrderOverview,
   ServiceType,
   User,
 } from '@/utils/api-types'
@@ -270,6 +271,19 @@ export const reportServiceOrderProgress = async (data: {
 }
 
 
+
+export const getServiceOrderOverview = async ({
+  from_date,
+  to_date,
+}: {
+  from_date?: string
+  to_date?: string
+}): Promise<ServiceOrderOverview> => {
+  const res = await appClient.get<ServiceOrderOverview>('/service_orders/overview', {
+    params: { from_date, to_date },
+  })
+  return res.data
+}
 
 export const createServiceOrder = async (data: {
   service_type_id?: string | null

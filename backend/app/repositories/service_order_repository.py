@@ -270,6 +270,27 @@ class ServiceOrderRepository:
                 detail=f"Integrity error: {e}",
             )
 
+    def get_overview(
+        self,
+        from_date: Optional[datetime] = None,
+        to_date: Optional[datetime] = None,
+    ) -> dict:
+        query = (
+            self.db.query(ServiceOrderModel.status, func.count(ServiceOrderModel.id))
+            .filter(ServiceOrderModel.deleted_at.is_(None))
+        )
+        if from_date:
+            query = query.filter(ServiceOrderModel.created_at >= from_date)
+        if to_date:
+            query = query.filter(ServiceOrderModel.created_at <= to_date)
+        results = query.group_by(ServiceOrderModel.status).all()
+
+        by_status = {s.value: 0 for s in ServiceOrderStatus}
+        for status, count in results:
+            by_status[status.value] = count
+
+        return {"total": sum(by_status.values()), "by_status": by_status}
+
     def change_service_order_status(
         self,
         service_order_status: ServiceOrderStatus,

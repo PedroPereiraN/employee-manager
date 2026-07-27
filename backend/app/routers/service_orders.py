@@ -1,3 +1,4 @@
+from datetime import datetime
 from typing import Optional
 from uuid import UUID
 from fastapi import APIRouter, Depends
@@ -12,9 +13,14 @@ from app.dtos.service_orders import (
     OutputPaginatedServiceOrderDto,
     OutputServiceOrderDto,
     ReportServiceOrderProgressInputDto,
+    ServiceOrderOverviewInputDto,
+    ServiceOrderOverviewOutputDto,
 )
 from app.usecases.service_orders.create_service_order_usecase import (
     CreateServiceOrderUsecase,
+)
+from app.usecases.service_orders.get_service_order_overview_usecase import (
+    GetServiceOrderOverviewUsecase,
 )
 
 from app.middleware.get_token import get_token
@@ -53,6 +59,20 @@ async def create_service_order(
     return CreateServiceOrderUsecase(
         service_order_repository=service_order_repository
     ).execute(body)
+
+
+@service_order_router.get(
+    "/overview", status_code=200, response_model=ServiceOrderOverviewOutputDto
+)
+async def get_service_order_overview(
+    from_date: Optional[datetime] = None,
+    to_date: Optional[datetime] = None,
+    db: Session = Depends(get_db),
+    _: str = Depends(get_token),
+):
+    return GetServiceOrderOverviewUsecase(
+        service_order_repository=ServiceOrderRepository(db=db)
+    ).execute(ServiceOrderOverviewInputDto(from_date=from_date, to_date=to_date))
 
 
 @service_order_router.get(

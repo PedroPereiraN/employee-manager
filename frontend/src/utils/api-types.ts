@@ -16,6 +16,11 @@ export type Position = {
   deleted_at: string | null
 }
 
+export type ServiceOrderOverview = {
+  total: number
+  by_status: Record<string, number>
+}
+
 export type PaginatedResponse<T> = {
   items: T[]
   total: number
